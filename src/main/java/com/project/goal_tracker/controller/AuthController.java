@@ -1,14 +1,16 @@
 package com.project.goal_tracker.controller;
 
 import com.project.goal_tracker.dto.LoginRequest;
+import com.project.goal_tracker.dto.RefreshRequest;
 import com.project.goal_tracker.dto.RegisterRequest;
+import com.project.goal_tracker.model.User;
 import com.project.goal_tracker.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -26,5 +28,10 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         return service.verify(request);
 
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody RefreshRequest request) {
+        return service.refresh(request);
     }
 }

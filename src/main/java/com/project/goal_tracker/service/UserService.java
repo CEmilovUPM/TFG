@@ -1,9 +1,12 @@
 package com.project.goal_tracker.service;
 
 import com.project.goal_tracker.dto.LoginRequest;
+import com.project.goal_tracker.dto.ProfileResponse;
+import com.project.goal_tracker.dto.RefreshRequest;
 import com.project.goal_tracker.dto.RegisterRequest;
 import com.project.goal_tracker.model.User;
 import com.project.goal_tracker.repository.UserRepository;
+import com.project.goal_tracker.utils.AggregateOutput;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +17,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -31,24 +36,96 @@ public class UserService {
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
-    public ResponseEntity<?> verify(LoginRequest user) {
+
+
+
+    public ResponseEntity<?> getProfile(String email){
+        AggregateOutput<ProfileResponse> out = new AggregateOutput<>();
+        User user =  userRepository.findByEmail(email);
+        if (user == null){
+            out.error("user_not_found","User couldn't be found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(out.getOutput());
+        }else{
+            out.append(new ProfileResponse(user.getName(),user.getEmail()));
+            return ResponseEntity.status(HttpStatus.OK).body(out.getOutput());
+        }
+
+    }
+
+
+    public ResponseEntity<?> verify(LoginRequest request) {
         Map<String, String> response = new HashMap<>();
 
         try {
             Authentication authentication =
-                    authManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
+                    authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-            // If authentication is successful, generate the JWT token
-            String jwtToken = jwtService.generateToken(user.getEmail());
-            response.put("token", jwtToken);
-            response.put("message", "Login successful.");
-            return ResponseEntity.status(HttpStatus.OK).body(response);
+            if(authentication.isAuthenticated()){
+                User user = userRepository.findByEmail(request.getEmail());
+
+                // If authentication is successful, generate the JWT token
+                String accessToken = jwtService.generateToken(user.getEmail());
+                String refreshToken = generateRefreshToken();
+
+                user.setRefreshToken(refreshToken);
+                user.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7));
+                userRepository.save(user);
+
+                response.put("accessToken", accessToken);
+                response.put("refreshToken", refreshToken);
+                response.put("message", "Login successful");
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+            }else{
+                response.put("message", "Invalid credentials");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
         } catch (BadCredentialsException e) {
             // Catching invalid credentials specifically
             response.put("message", "Invalid credentials");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }catch (Exception e) {
+            response.put("message", "An error occurred during login");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+    public String generateRefreshToken() {
+        return UUID.randomUUID().toString(); // secure random string
+    }
+
+    public ResponseEntity<?> refresh(RefreshRequest request){
+        Map<String, String> response = new HashMap<>();
+
+        String refreshToken = request.getRefreshToken();
+
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            response.put("message", "Refresh token is required");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        User user = userRepository.findByRefreshToken(refreshToken);
+
+        if (user == null) {
+            response.put("message", "Invalid refresh token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        if (request.getRefreshToken().equals(user.getRefreshToken())) {
+            if(LocalDateTime.now().isBefore(user.getRefreshTokenExpiry())){
+                String newAccessToken = jwtService.generateToken(user.getEmail());
+                response.put("accessToken", newAccessToken);
+                return ResponseEntity.ok(response);
+            }else{
+                response.put("message", "Please log in again");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+        } else {
+            response.put("message", "Invalid refresh token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+    }
+
+
 
     public ResponseEntity<?> register(RegisterRequest request) {
 
@@ -87,12 +164,14 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setName(request.getName());
         user.setPassword(request.getPassword());
-
         user.setPassword(encoder.encode(user.getPassword()));
+        user.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7));
+        user.setRefreshToken(generateRefreshToken());
         userRepository.save(user);
+        String accessToken = jwtService.generateToken(user.getEmail());
 
-        String jwtToken = jwtService.generateToken(user.getEmail());
-        response.put("token", jwtToken);
+        response.put("refreshToken",user.getRefreshToken());
+        response.put("accessToken", accessToken);
         response.put("message", "Registration successful.");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

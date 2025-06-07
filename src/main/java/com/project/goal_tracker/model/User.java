@@ -2,6 +2,10 @@ package com.project.goal_tracker.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 public class User {
     @Id
@@ -16,6 +20,32 @@ public class User {
 
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(length = 500, nullable = false, unique = true)
+    private String refreshToken;
+
+    @Column(nullable = false)
+    private LocalDateTime refreshTokenExpiry;
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Goal> goals = new ArrayList<>();
+
+    public LocalDateTime getRefreshTokenExpiry() {
+        return refreshTokenExpiry;
+    }
+
+    public void setRefreshTokenExpiry(LocalDateTime refreshTokenExpiry) {
+        this.refreshTokenExpiry = refreshTokenExpiry;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
 
 
     public String getEmail() {
@@ -48,5 +78,17 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<Goal> getGoals() {
+        return goals;
+    }
+
+    public void setGoals(List<Goal> goals) {
+        this.goals = goals;
+    }
+
+    public void addGoal(Goal goal){
+        this.goals.add(goal);
     }
 }
