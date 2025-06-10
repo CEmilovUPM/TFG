@@ -1,0 +1,59 @@
+// public/js/login.js
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form        = document.getElementById('login-form');
+  const emailInput  = document.getElementById('login-email');
+  const passInput   = document.getElementById('login-password');
+  const responseDiv = document.getElementById('login-response');
+
+  function clearMessage() {
+    responseDiv.innerText = '';
+    responseDiv.style.color = '';
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    clearMessage();
+
+    const email    = emailInput.value.trim();
+    const password = passInput.value;
+
+    if (!email || !password) {
+      responseDiv.style.color = 'red';
+      responseDiv.innerText = 'Email and password must not be empty.';
+      return;
+    }
+
+    try {
+      const res = await fetch('/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        const at = data.info?.accessToken  || data.accessToken;
+        const rt = data.info?.refreshToken || data.refreshToken;
+
+        if (at && rt) {
+          localStorage.setItem('accessToken', at);
+          localStorage.setItem('refreshToken', rt);
+          window.location.href = '/home';
+        } else {
+          responseDiv.style.color = 'red';
+          responseDiv.innerText = 'Success, but no tokens were returned.';
+        }
+      } else {
+        const msg = data.message
+          || (data.errors ? Object.values(data.errors).join('\n') : 'Login failed.');
+        responseDiv.style.color = 'red';
+        responseDiv.innerText = msg;
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      responseDiv.style.color = 'red';
+      responseDiv.innerText = 'An error occurred. Please try again.';
+    }
+  });
+});

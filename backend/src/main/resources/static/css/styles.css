@@ -1,0 +1,208 @@
+/* ========== GLOBAL ========== */
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  margin: 0;
+  padding: 0;
+}
+
+/* Optionally, a general container utility if used elsewhere */
+.container {
+  /* You had: width: 320px; margin: 60px auto; padding: 20px 30px; ... */
+  /* But only scope that for auth: move into .auth-container below */
+}
+
+/* ========== AUTH (Login/Register) STYLES ========== */
+.auth-container {
+  width: 320px;
+  margin: 60px auto;
+  padding: 20px 30px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+/* Scope h1 inside auth */
+.auth-container h1 {
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+}
+
+/* Scope form-group inside auth */
+.auth-container .form-group {
+  margin-bottom: 15px;
+}
+
+/* Scope labels inside auth */
+.auth-container label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+  color: #444;
+}
+
+/* Scope inputs inside auth */
+.auth-container input[type="text"],
+.auth-container input[type="email"],
+.auth-container input[type="password"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+/* Focus style scoped */
+.auth-container input[type="text"]:focus,
+.auth-container input[type="email"]:focus,
+.auth-container input[type="password"]:focus {
+  border-color: #0056b3;
+  outline: none;
+}
+
+/* Scope buttons inside auth */
+.auth-container button {
+  width: 100%;
+  padding: 10px;
+  background: #0056b3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
+
+/* Hover for auth buttons */
+.auth-container button:hover {
+  background: #003d80;
+}
+
+/* Response messages inside auth */
+.auth-container .response-message {
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* Toggle text inside auth */
+.auth-container .toggle-line {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.auth-container .toggle-line a {
+  color: #0056b3;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.auth-container .toggle-line a:hover {
+  text-decoration: underline;
+}
+
+/* Error messages in auth */
+.auth-container .error-message {
+  color: red;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* Hide/show utility (already inline in index.html) */
+/* .hidden { display: none; } */
+
+/* ========== DASHBOARD / GOAL STYLES ========== */
+/* These only apply when you wrap dashboard content in .dashboard-container */
+.dashboard-container {
+  /* e.g., width constraint, centering, padding */
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+
+/* Goal card wrapper */
+.dashboard-container .goal-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: nowrap; /* keep info and actions side-by-side */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Left side info */
+.dashboard-container .goal-info {
+  flex: 1 1 auto;
+  min-width: 0; /* allow wrapping inside */
+}
+
+/* Right side actions */
+.dashboard-container .goal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+/* Action buttons fixed size */
+.dashboard-container .goal-actions button {
+  width: 100px;  /* fixed width */
+  height: 36px;  /* fixed height */
+  padding: 0;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid #888;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* Hover style */
+.dashboard-container .goal-actions button:hover {
+  background-color: #e0e0e0;
+}
+
+/* Specific button accents */
+.dashboard-container .view-goal {
+  border-color: #4a90e2;
+  color: #4a90e2;
+}
+.dashboard-container .update-goal {
+  border-color: #f0a500;
+  color: #f0a500;
+}
+.dashboard-container .delete-goal {
+  border-color: #d0021b;
+  color: #d0021b;
+}
+
+/* Responsive behavior */
+@media (max-width: 600px) {
+  .dashboard-container .goal-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .dashboard-container .goal-actions {
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .dashboard-container .goal-actions button {
+    width: auto;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+}
