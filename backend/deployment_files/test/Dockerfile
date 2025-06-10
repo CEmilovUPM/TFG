@@ -6,5 +6,5 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 #It is assumed that the volume passed will have the git repo cloned in /app
-WORKDIR /app/backend
-CMD ["./mvnw", "spring-boot:run"]
+WORKDIR /app
+CMD ["./mvnw", "-f", "backend/pom.xml", "spring-boot:run"]
