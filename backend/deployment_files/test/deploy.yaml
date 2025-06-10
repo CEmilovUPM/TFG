@@ -36,6 +36,7 @@ metadata:
   name: backend-service
   namespace: testing
 spec:
+  type: NodePort
   selector:
     app: backend
   ports:
