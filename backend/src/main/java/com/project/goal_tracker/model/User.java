@@ -31,6 +31,25 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Goal> goals = new ArrayList<>();
 
+    private boolean isAdmin = false;
+
+    private boolean banned = false;
+
+    public boolean isBanned() {
+        return banned;
+    }
+    public void setBanned(boolean banned) {
+        this.banned = banned;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
+    }
+
     public LocalDateTime getRefreshTokenExpiry() {
         return refreshTokenExpiry;
     }

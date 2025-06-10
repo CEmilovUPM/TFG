@@ -1,9 +1,6 @@
 package com.project.goal_tracker.service;
 
-import com.project.goal_tracker.dto.LoginRequest;
-import com.project.goal_tracker.dto.ProfileResponse;
-import com.project.goal_tracker.dto.RefreshRequest;
-import com.project.goal_tracker.dto.RegisterRequest;
+import com.project.goal_tracker.dto.*;
 import com.project.goal_tracker.model.User;
 import com.project.goal_tracker.repository.UserRepository;
 import com.project.goal_tracker.utils.AggregateOutput;
@@ -18,9 +15,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.project.goal_tracker.dto.UserResponse;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -273,4 +274,80 @@ public class UserService {
     }
 
 
+    public ResponseEntity<?> manageRole(String admin, String targetUser, boolean makeAdmin) {
+        AggregateOutput<String> out = new AggregateOutput<>();
+
+        //default admin
+        if(Objects.equals(targetUser, "admin@goal.tracker")){
+            out.error("default_admin_protected", "This user cannot be modified.");
+            return out.setStatus(HttpStatus.NOT_FOUND).toResponseEntity();
+        }
+
+        if(Objects.equals(admin, targetUser)){
+            out.warning("operation_not_allowed","You cannot demote/promote yourself");
+            return out.setStatus(HttpStatus.BAD_REQUEST).toResponseEntity();
+        }
+
+         User user = this.userRepository.findByEmail(targetUser);
+
+         if(user == null){
+             out.error("user_does_not_exist","The user does not exist");
+             return out.setStatus(HttpStatus.NOT_FOUND).toResponseEntity();
+         }
+
+        user.setAdmin(makeAdmin);
+        this.userRepository.save(user);
+         if(makeAdmin){
+             out.info("promoted_admin", "User successfully promoted to admin");
+         }else{
+             out.info("demoted_admin", "User successfully demoted from admin");
+         }
+        return out.setStatus(HttpStatus.OK).toResponseEntity();
+    }
+
+    public ResponseEntity<?> manageAccountStatus(String admin, String targetUser, boolean ban) {
+        AggregateOutput<String> out = new AggregateOutput<>();
+
+        //default admin
+        if(Objects.equals(targetUser, "admin@goal.tracker")){
+            out.error("default_admin_protected", "This user cannot be modified.");
+            return out.setStatus(HttpStatus.NOT_FOUND).toResponseEntity();
+        }
+
+        if(Objects.equals(admin, targetUser)){
+            out.warning("operation_not_allowed","You cannot ban/unban yourself");
+            return out.setStatus(HttpStatus.BAD_REQUEST).toResponseEntity();
+        }
+
+        User user = this.userRepository.findByEmail(targetUser);
+
+        if (user == null) {
+            out.error("user_does_not_exist", "The user does not exist.");
+            return out.setStatus(HttpStatus.NOT_FOUND).toResponseEntity();
+        }
+
+        user.setBanned(ban);
+        this.userRepository.save(user);
+        if(ban){
+            out.info("user_banned", "User successfully banned");
+        }else{
+            out.info("user_unbanned", "User successfully unbanned");
+        }
+
+        return out.setStatus(HttpStatus.OK).toResponseEntity();
+    }
+
+    public ResponseEntity<?> getUsers() {
+        AggregateOutput<UserResponse> out = new AggregateOutput<>();
+        List<User> users = userRepository.findAll();
+
+        List<UserResponse> list = new ArrayList<>();
+        for (User user: users) {
+            list.add(UserResponse.fromEntity(user));
+        }
+
+        out.setData(list);
+        out.info("message","User succesfully retrieved",HttpStatus.OK);
+        return out.toResponseEntity();
+    }
 }

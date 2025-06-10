@@ -23,18 +23,23 @@ spec:
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: backend-db-secret
-                  key: DB_USERNAME
+                  name: mysql-secret
+                  key: MYSQL_USER
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: backend-db-secret
-                  key: DB_PASSWORD
+                  name: mysql-secret
+                  key: MYSQL_PASSWORD
             - name: SPRING_DATASOURCE_URL
               valueFrom:
                 secretKeyRef:
-                  name: backend-db-secret
+                  name: backend-secret
                   key: DB_URL
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: ADMIN_PASSWORD
           volumeMounts:
             - name: project-source
               mountPath: /app
