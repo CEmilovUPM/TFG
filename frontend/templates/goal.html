@@ -19,11 +19,10 @@
   </div>
 
   <hr>
-  <div class="progress-actions">
-  <a href="{{ url_for('protected.create_progress', goal_id=goal.id) }}" class="add-progress-button">➕ Add Progress</a>
+  <div class="progress-header-bar">
+    <h3>Progress Entries</h3>
+    <a href="{{ url_for('protected.create_progress', goal_id=goal.id) }}" class="add-progress-button">➕ Add Progress</a>
   </div>
-
-  <h3>Progress Entries</h3>
   {% if progress_list %}
     <form method="get" action="{{ url_for('protected.single_goal', goal_id=goal.id) }}" class="progress-search-form">
         <input type="text" name="q" placeholder="Search progress..." value="{{ request.args.get('q', '') }}" />
