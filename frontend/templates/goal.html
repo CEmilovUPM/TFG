@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Goal Details{% endblock %}
+
+{% block content %}
+  <a href="{{ url_for('protected.goals_list') }}" class="back-button">← Go Back</a>
+
+  <div class="goal-details">
+    <div class="goal-header">
+      <h2>{{ goal.title }}</h2>
+      <div class="goal-actions">
+        <a href="/goals/{{ goal.id }}/update-form" class="update-button">✏️ Update</a>
+        <button class="delete-button" data-goal-id="{{ goal.id }}" title="Delete Goal">🗑️</button>
+      </div>
+    </div>
+    <p><strong>Description:</strong> {{ goal.description }}</p>
+    <p><strong>Target:</strong> {{ goal.totalDesiredAmount | trim_float }} [{{ goal.metric }}]</p>
+    <p><strong>Progress:</strong> {{ progress_amount | trim_float }} [{{ goal.metric }}]</p>
+  </div>
+
+  <hr>
+  <div class="progress-actions">
+  <a href="{{ url_for('protected.create_progress', goal_id=goal.id) }}" class="add-progress-button">➕ Add Progress</a>
+  </div>
+
+  <h3>Progress Entries</h3>
+  {% if progress_list %}
+    <form method="get" action="{{ url_for('protected.single_goal', goal_id=goal.id) }}" class="progress-search-form">
+        <input type="text" name="q" placeholder="Search progress..." value="{{ request.args.get('q', '') }}" />
+        <button type="submit">Search</button>
+    </form>
+    <ul class="progress-list">
+      {% for progress in progress_list %}
+        <li class="progress-item">
+          <div class="progress-header">
+            <p><strong>Date:</strong> {{ progress.date }}</p>
+            <div class="progress-entry-actions">
+              <a href="{{ url_for('protected.update_progress_form', goal_id=goal.id, progress_id=progress.id) }}" class="progress-update-button" title="Edit Progress">✏️</a>
+              <button class="progress-delete-button" data-goal-id="{{ goal.id }}" data-progress-id="{{ progress.id }}" title="Delete Progress">🗑️</button>
+            </div>
+          </div>
+          <p><strong>Amount:</strong> {{ progress.amount | trim_float }}</p>
+          <p><strong>Notes:</strong> {{ progress.updateNote }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No progress entries available.</p>
+  {% endif %}
+
+  <script>
+    document.querySelector('.delete-button').addEventListener('click', async function (e) {
+      e.preventDefault();
+      const goalId = this.getAttribute('data-goal-id');
+      const confirmDelete = confirm("Are you sure you want to delete this goal?");
+      if (!confirmDelete) return;
+
+      try {
+        const res = await fetch(`/api/goal/${goalId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+          }
+        });
+
+        if (res.status === 204) {
+          window.location.href = "/goals";
+        } else {
+          const data = await res.json();
+          alert(data.message || "Failed to delete goal.");
+        }
+      } catch (err) {
+        console.error("Delete failed:", err);
+        alert("Error occurred while deleting.");
+      }
+    });
+  </script>
+  <script>
+  document.querySelectorAll('.progress-delete-button').forEach(button => {
+    button.addEventListener('click', async function (e) {
+      e.preventDefault();
+      const goalId = this.getAttribute('data-goal-id');
+      const progressId = this.getAttribute('data-progress-id');
+      const confirmDelete = confirm("Delete this progress entry?");
+      if (!confirmDelete) return;
+
+      try {
+        const res = await fetch(`/api/goal/${goalId}/progress/${progressId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+          }
+        });
+
+        if (res.status === 204) {
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          alert(data.message || "Failed to delete progress.");
+        }
+      } catch (err) {
+        console.error("Delete failed:", err);
+        alert("Error occurred while deleting progress.");
+      }
+    });
+  });
+  </script>
+
+  <style>
+    .goal-details {
+      background-color: #f9f9f9;
+      padding: 20px;
+      border: 2px solid #ccc;
+      margin-bottom: 20px;
+    }
+
+    .goal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .goal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .delete-button,
+    .update-button {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .delete-button {
+      color: red;
+    }
+
+    .update-button {
+      color: #007bff;
+      border: 1px solid #007bff;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 0.9rem;
+    }
+
+    .update-button:hover {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .progress-list {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .progress-item {
+      border: 1px solid #ddd;
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #fff;
+    }
+
+    .back-button {
+      display: inline-block;
+      margin-bottom: 20px;
+      text-decoration: none;
+      color: #007BFF;
+    }
+
+    .back-button:hover {
+      text-decoration: underline;
+    }
+  </style>
+{% endblock %}

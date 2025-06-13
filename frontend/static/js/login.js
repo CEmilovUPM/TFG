@@ -1,4 +1,3 @@
-// public/js/login.js
 
 document.addEventListener('DOMContentLoaded', () => {
   const form        = document.getElementById('login-form');
@@ -25,25 +24,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const res = await fetch('/auth/login', {
+      const res = await fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
       });
+
       const data = await res.json();
 
       if (res.ok) {
-        const at = data.info?.accessToken  || data.accessToken;
-        const rt = data.info?.refreshToken || data.refreshToken;
-
-        if (at && rt) {
-          localStorage.setItem('accessToken', at);
-          localStorage.setItem('refreshToken', rt);
-          window.location.href = '/home';
-        } else {
-          responseDiv.style.color = 'red';
-          responseDiv.innerText = 'Success, but no tokens were returned.';
-        }
+        window.location.href = '/goals';
       } else {
         const msg = data.message
           || (data.errors ? Object.values(data.errors).join('\n') : 'Login failed.');

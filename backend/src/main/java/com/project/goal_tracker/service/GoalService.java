@@ -39,6 +39,9 @@ public class GoalService {
 
 
     private boolean validOwner(User user,  Goal goal, AggregateOutput<?> out){
+        if(user.isAdmin()){
+            return true;
+        }
         if(!Objects.equals(user.getId(), goal.getUser().getId())){
             out.error(AggregateOutput.GOAL_NOT_FOUND,"Goal doesn't exist", HttpStatus.NOT_FOUND);
             return false;
@@ -57,7 +60,12 @@ public class GoalService {
 
     public void listGoals(User user, AggregateOutput<GoalResponse> out){
 
-        List<Goal> goals = goalRepository.findByUserId(user.getId());
+        List<Goal> goals;
+        if(user.isAdmin()){
+            goals = goalRepository.findAll();
+        }else{
+            goals = goalRepository.findByUserId(user.getId());
+        }
 
         List<GoalResponse> list = new ArrayList<>();
         for (Goal goal : goals) {

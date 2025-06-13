@@ -28,6 +28,9 @@ public class ProgressService {
     private ProgressRepository progressRepository;
 
     private boolean validOwner(User user,  Goal goal, AggregateOutput<?> out){
+        if(user.isAdmin()){
+            return true;
+        }
         if(!Objects.equals(user.getId(), goal.getUser().getId())){
             out.error(AggregateOutput.GOAL_NOT_FOUND,"Goal doesn't exist", HttpStatus.NOT_FOUND);
             return false;
@@ -72,6 +75,7 @@ public class ProgressService {
 
 
     public void listProgress(Goal goal, AggregateOutput<ProgressResponse> out){
+
         List<Progress> list = progressRepository.findByGoalId(goal.getId());
 
         for (Progress p:
@@ -82,6 +86,10 @@ public class ProgressService {
     }
 
     public void createProgress(Goal goal, ProgressCreate request, AggregateOutput<ProgressResponse> out){
+
+        if(!validProgressObject(request.getAmount(),request.getUpdateNote(),out)){
+            return;
+        }
         Progress progress = new Progress();
         progress.setAmount(request.getAmount());
         progress.setUpdateNote(request.getUpdateNote());
@@ -91,6 +99,19 @@ public class ProgressService {
         progressRepository.save(progress);
         out.append(ProgressResponse.fromEntity(progress));
         out.info("message", "Saved progress", HttpStatus.CREATED);
+    }
+
+    private boolean validProgressObject(Double amount, String updateNote, AggregateOutput<ProgressResponse> out){
+        boolean isValid = true;
+        if(amount <= 0.0){
+            out.error("amount_must_be_positive", "The amount must be positive", HttpStatus.BAD_REQUEST);
+            isValid = false;
+        }
+        if(updateNote.isBlank()){
+            out.error("update_note_is_blank", "The update note cannot be blank", HttpStatus.BAD_REQUEST);
+            isValid = false;
+        }
+        return isValid;
     }
 
 
@@ -115,6 +136,10 @@ public class ProgressService {
             return;
         }
 
+        if(!validProgressObject(request.getAmount(),request.getUpdateNote(),out)){
+            return;
+        }
+
         if(request.getUpdateNote() != null) prog.setUpdateNote(request.getUpdateNote());
         if(request.getAmount() != null) prog.setAmount(request.getAmount());
 
@@ -136,7 +161,7 @@ public class ProgressService {
 
         progressRepository.delete(prog);
         out.append(ProgressResponse.fromEntity(prog));
-        out.info("message","Successfully deleted progress", HttpStatus.OK);
+        out.info("message","Successfully deleted progress", HttpStatus.NO_CONTENT);
     }
 }
 

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Your Goals{% endblock %}
+
+{% block content %}
+  <div class="top-actions">
+    <a href="{{ url_for('protected.create_goal_form') }}" class="new-goal-button">➕ New Goal</a>
+  </div>
+
+  <form method="get" action="{{ url_for('protected.goals_list') }}" class="goal-search-form">
+    <input type="text" name="q" placeholder="Search goals..." value="{{ request.args.get('q', '') }}" />
+    <button type="submit">Search</button>
+  </form>
+
+  {% if goals %}
+    {% for goal in goals %}
+      <div class="goal-container">
+        <a href="/goals/{{ goal.id }}" class="goal-link">
+          <div class="goal-info">
+            <h2>{{ goal.title }}</h2>
+            <p>{{ goal.description }}</p>
+            <p>Goal: {{ goal.totalDesiredAmount | trim_float }} [{{ goal.metric }}]</p>
+          </div>
+        </a>
+        <button class="delete-button" data-goal-id="{{ goal.id }}" title="Delete Goal">
+          🗑️
+        </button>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No goals found.</p>
+  {% endif %}
+
+  <script>
+    document.querySelectorAll('.delete-button').forEach(button => {
+      button.addEventListener('click', async e => {
+        e.preventDefault();
+        const goalId = button.getAttribute('data-goal-id');
+        const confirmDelete = confirm("Are you sure you want to delete this goal?");
+        if (!confirmDelete) return;
+
+        try {
+          const res = await fetch(`/api/goal/${goalId}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+            }
+          });
+
+          if (res.status === 204) {
+            window.location.reload();
+          } else {
+            const data = await res.json();
+            alert(data.message || "Failed to delete goal.");
+          }
+        } catch (err) {
+          console.error("Delete failed:", err);
+          alert("Error occurred while deleting.");
+        }
+      });
+    });
+  </script>
+
+  <style>
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+    .new-goal-button {
+      background-color: #28a745;
+      color: white;
+      padding: 8px 14px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .new-goal-button:hover {
+      background-color: #218838;
+    }
+    .delete-button {
+      background: none;
+      border: none;
+      color: red;
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    .goal-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .goal-link {
+      flex-grow: 1;
+      text-decoration: none;
+      color: inherit;
+    }
+  </style>
+{% endblock %}

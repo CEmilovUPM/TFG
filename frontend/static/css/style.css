@@ -206,3 +206,121 @@ body {
     margin-bottom: 8px;
   }
 }
+
+.goal-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.goal-link:hover .goal-container {
+  background-color: #f9f9f9;
+  box-shadow: 0 0 0 2px #cce0ff;
+}
+
+.goal-search-form {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 8px;
+}
+
+.goal-search-form input[type="text"] {
+  flex: 1;
+  padding: 8px;
+  border: 1.5px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.goal-search-form button {
+  padding: 8px 12px;
+  background-color: #0056b3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.goal-search-form button:hover {
+  background-color: #003d80;
+}
+
+.progress-actions {
+  margin-bottom: 20px;
+}
+
+.add-progress-button {
+  background-color: #28a745;
+  color: white;
+  padding: 8px 15px;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.add-progress-button:hover {
+  background-color: #218838;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-delete-button {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: red;
+  cursor: pointer;
+}
+
+.progress-search-form {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 8px;
+}
+
+.progress-search-form input[type="text"] {
+  flex: 1;
+  padding: 8px;
+  border: 1.5px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.progress-search-form button {
+  padding: 8px 12px;
+  background-color: #0056b3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.progress-search-form button:hover {
+  background-color: #003d80;
+}
+
+.progress-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+
+.add-progress-button {
+  background-color: #28a745;
+  color: white;
+  padding: 6px 12px;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 0.9rem;
+}
+
+.add-progress-button:hover {
+  background-color: #218838;
+}

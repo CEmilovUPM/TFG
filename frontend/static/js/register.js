@@ -1,5 +1,3 @@
-// public/js/register.js
-
 document.addEventListener('DOMContentLoaded', () => {
   const form             = document.getElementById('register-form');
   const nameInput        = document.getElementById('reg-name');
@@ -29,24 +27,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     try {
-      const res  = await fetch('/auth/register', {
+      const res  = await fetch('/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload)
       });
       const data = await res.json();
 
       if (res.status === 201) {
-        const at = data.info?.accessToken;
-        const rt = data.info?.refreshToken;
-        if (at && rt) {
-          localStorage.setItem('accessToken', at);
-          localStorage.setItem('refreshToken', rt);
-          window.location.href = '/home';
-        } else {
-          generalErrDiv.style.color = 'red';
-          generalErrDiv.innerText = 'Registered but no tokens returned.';
-        }
+        window.location.href = '/goals';
         return;
       }
 

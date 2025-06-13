@@ -61,6 +61,7 @@ public class ProgressController {
         User user = userDetails.getUser();
         AggregateOutput<ProgressResponse> out = new AggregateOutput<>();
 
+
         if(bindingResult.hasErrors()){
             bindingResult.getFieldErrors().forEach(error -> {
                 out.error(error.getField(), error.getDefaultMessage());
@@ -73,7 +74,7 @@ public class ProgressController {
             return out.toResponseEntity();
         }
 
-        progService.createProgress(goal,request,out);
+        progService.createProgress(goal, request, out);
         return out.toResponseEntity();
     }
 

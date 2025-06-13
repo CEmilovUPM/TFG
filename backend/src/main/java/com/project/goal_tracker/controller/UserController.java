@@ -72,7 +72,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<?> listUsers(@AuthenticationPrincipal CustomUserDetails userDetails){
         return service.getUsers();
     }

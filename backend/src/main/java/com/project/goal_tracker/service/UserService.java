@@ -84,7 +84,7 @@ public class UserService {
                 out.info("refreshToken", refreshToken);
                 out.info("message", "Login successful");
 
-                ResponseCookie cookie = ResponseCookie.from("JWT", accessToken)
+                ResponseCookie accessTokenCookie = ResponseCookie.from("JWT", accessToken)
                         .httpOnly(true)
                         .secure(true)
                         .path("/")
@@ -92,9 +92,18 @@ public class UserService {
                         .sameSite("Lax")
                         .build();
 
+                ResponseCookie refreshTokenCookie = ResponseCookie.from("RefreshToken", refreshToken)
+                        .httpOnly(true)
+                        .secure(true)
+                        .path("/")
+                        .maxAge(Duration.ofDays(7))  // typically longer expiry for refresh token
+                        .sameSite("Lax")
+                        .build();
+
                 return ResponseEntity
                         .ok()
-                        .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                        .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+                        .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                         .body(out.getOutput());
             }else{
                 out.error("message", "Invalid credentials");
@@ -197,7 +206,28 @@ public class UserService {
         out.info("refreshToken",user.getRefreshToken());
         out.info("accessToken", accessToken);
         out.info("message","Registration successful");
-        return out.setStatus(HttpStatus.CREATED).toResponseEntity();
+
+        ResponseCookie accessTokenCookie = ResponseCookie.from("JWT", accessToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(Duration.ofHours(1))
+                .sameSite("Lax")
+                .build();
+
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("RefreshToken", user.getRefreshToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(Duration.ofDays(7))  // typically longer expiry for refresh token
+                .sameSite("Lax")
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .body(out.getOutput());
     }
 
     private boolean invalidName(String name, AggregateOutput<?> out) {
@@ -347,7 +377,7 @@ public class UserService {
         }
 
         out.setData(list);
-        out.info("message","User succesfully retrieved",HttpStatus.OK);
+        out.info("message","Users succesfully retrieved",HttpStatus.OK);
         return out.toResponseEntity();
     }
 }
