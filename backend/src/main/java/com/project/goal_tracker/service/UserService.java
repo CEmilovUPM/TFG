@@ -216,7 +216,7 @@ public class UserService {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(Duration.ofDays(7))  // typically longer expiry for refresh token
+                .maxAge(Duration.ofDays(7))  //longer expiry for refresh token
                 .sameSite("Lax")
                 .build();
 

@@ -2,6 +2,17 @@
 
 {% block title %}Goal Details{% endblock %}
 
+{% block subtitle %}
+  {% if target_name or target_email %}
+    <div class="subtitle">
+      Viewing
+      {% if target_name %}{{ target_name }}{% endif %}
+      {% if target_name and target_email %}, {% endif %}
+      {% if target_email %}{{ target_email }}{% endif %}
+    </div>
+  {% endif %}
+{% endblock %}
+
 {% block content %}
   <div class="back-button-container">
     <a href="{{ url_for('protected.goals_list', user_id=user_id) }}" class="back-button">← Go Back</a>

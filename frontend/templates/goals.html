@@ -2,6 +2,17 @@
 
 {% block title %}Your Goals{% endblock %}
 
+{% block subtitle %}
+  {% if target_name or target_email %}
+    <div class="subtitle">
+      Viewing
+      {% if target_name %}{{ target_name }}{% endif %}
+      {% if target_name and target_email %}, {% endif %}
+      {% if target_email %}{{ target_email }}{% endif %}
+    </div>
+  {% endif %}
+{% endblock %}
+
 {% block content %}
   {% if isAdmin %}
     <div class="back-button-container">

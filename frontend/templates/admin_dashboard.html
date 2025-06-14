@@ -13,7 +13,7 @@
       <div class="goal-container">
         <a href="{{ url_for('protected.goals_list', user_id=user.id) }}" class="goal-link">
           <div class="goal-info">
-            <h2>{{ user.name }}</h2>
+            <h2>{{ user.name }} {% if user.admin %}(Admin){% endif %}</h2>
             <p>{{ user.email }}</p>
             <p>User ID: {{ user.id }}</p>
           </div>

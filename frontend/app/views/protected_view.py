@@ -26,6 +26,24 @@ def profile():
 
     return body, 200
 
+
+def target_profile(token, refresh, user_id):
+    client = get_client()
+    target_user = dict()
+    profile_request = RequestBuilder()
+    (profile_request
+     .auth(token)
+     .refresh(refresh)
+     .set_method("get")
+     .set_endpoint(f"/user/{user_id}/profile"))
+    profile_response = client.request_reauth(profile_request)
+    if profile_response.status == 200:
+        body_profile = json.loads(profile_response.data)["data"][0]
+        target_user["target_name"] = body_profile["name"]
+        target_user["target_email"] = body_profile["email"]
+    return target_user, profile_request.access_token
+
+
 @protected.route("/user/<int:user_id>/goals",methods=["GET"])
 def goals_list(user_id):
     token = request.cookies.get('JWT')
@@ -36,11 +54,18 @@ def goals_list(user_id):
 
     user_data,_ =  profile()
     user_data = user_data["data"][0]
-    user_data.pop("id", None)
+    token_user_id = user_data.pop("id", None)
+
+    changed_token = token
+
+    target_user = dict()
+    if token_user_id != user_id:
+        target_user, changed_token = target_profile(token,refresh, user_id)
+
 
 
     backend_request = ((((RequestBuilder()
-                      .auth(token))
+                      .auth(changed_token))
                       .refresh(refresh))
                       .set_method("get"))
                       .set_endpoint(f"/user/{user_id}/goals"))
@@ -63,14 +88,16 @@ def goals_list(user_id):
         resp = make_response(render_template("goals.html",
                                              goals=filtered_goals,
                                              user_id=user_id,
-                                             **user_data))
+                                             **user_data,
+                                             **target_user))
         resp.set_cookie("JWT", backend_request.access_token)
         return resp
 
     return render_template("goals.html",
                            goals=filtered_goals,
                            user_id=user_id,
-                           **user_data)
+                           **user_data,
+                           **target_user)
 
 
 
@@ -136,7 +163,22 @@ def single_goal(user_id, goal_id):
 
     user_data, _ = profile()
     user_data = user_data["data"][0]
-    user_data.pop("id", None)
+    token_user_id = user_data.pop("id", None)
+
+    target_user = dict()
+    if token_user_id != user_id:
+
+        profile_request = RequestBuilder()
+        (profile_request
+         .auth(token)
+         .refresh(refresh)
+         .set_method("get")
+         .set_endpoint(f"/user/{user_id}/profile"))
+        profile_response = client.request_reauth(profile_request)
+        if profile_response.status == 200:
+            body_profile = json.loads(profile_response.data)["data"][0]
+            target_user["target_name"] = body_profile["name"]
+            target_user["target_email"] = body_profile["email"]
 
 
     if token != backend_request.access_token:
@@ -145,7 +187,8 @@ def single_goal(user_id, goal_id):
                                              progress_list=filtered_progress,
                                              progress_amount=total_amount,
                                              user_id=user_id,
-                                             **user_data))
+                                             **user_data,
+                                             **target_user))
         resp.set_cookie("JWT", backend_request.access_token)
         return resp
 
@@ -153,7 +196,8 @@ def single_goal(user_id, goal_id):
                            progress_list=filtered_progress,
                            progress_amount=total_amount,
                            user_id=user_id,
-                           **user_data)
+                           **user_data,
+                           **target_user)
 
 @protected.route("/user/<int:user_id>/goals/create-form", methods=["GET", "POST"])
 def create_goal_form(user_id):

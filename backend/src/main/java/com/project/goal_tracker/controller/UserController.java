@@ -5,6 +5,7 @@ import com.project.goal_tracker.dto.BanUserRequest;
 import com.project.goal_tracker.dto.ProfileResponse;
 import com.project.goal_tracker.dto.PromoteRequest;
 import com.project.goal_tracker.model.CustomUserDetails;
+import com.project.goal_tracker.model.User;
 import com.project.goal_tracker.service.JWTService;
 import com.project.goal_tracker.service.UserService;
 import com.project.goal_tracker.utils.AggregateOutput;
@@ -26,12 +27,21 @@ public class UserController {
     @Autowired
     private JWTService jwtService;
 
+
+    //this one will be used to get your JWT profile
     @GetMapping("/profile")
     public ResponseEntity<?> profile(@AuthenticationPrincipal CustomUserDetails userDetails){
         AggregateOutput<ProfileResponse> out = new AggregateOutput<>();
         return service.getProfile(userDetails.getUsername(),out);
     }
 
+    @GetMapping("/{userId}/profile")
+    public ResponseEntity<?> profileFromUser(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                             @PathVariable Long userId){
+        AggregateOutput<ProfileResponse> out = new AggregateOutput<>();
+        User user = service.getUser(userId, out);
+        return service.getProfile(user.getEmail(),out);
+    }
 
     //Takes in the email of the targetUser
     @PreAuthorize("hasRole('ADMIN')")
