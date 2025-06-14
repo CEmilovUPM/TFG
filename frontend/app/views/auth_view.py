@@ -1,6 +1,6 @@
 from http.client import HTTPResponse
 
-from flask import Blueprint, request, Response, jsonify
+from flask import Blueprint, request, Response, jsonify, make_response, redirect
 import json
 
 from urllib3 import BaseHTTPResponse
@@ -27,12 +27,24 @@ def register():
 
     return forward_token(response)
 
-@auth.route("/refresh", methods=['GET'])
-def refresh():
-    token = request.cookies.get('refreshToken')
+@auth.route("/logout", methods=["POST"])
+def logout():
+    token = request.cookies.get('JWT')
+    refresh = request.cookies.get('RefreshToken')
+    if not refresh:
+        return jsonify({"message":"Already logged out"}), 200
+
     client = get_client()
-    #CHANGE THE REFRESH ENDPOINT  TO RETURN THE COOKIE AS WELL
-    response = client.request("POST")
+
+    client.request("POST", "/auth/logout")
+
+    response = make_response(redirect("/"))
+
+    # Clear the cookies (set Max-Age=0)
+    response.set_cookie("JWT", "", max_age=0, path="/", httponly=True, secure=True, samesite='Lax')
+    response.set_cookie("RefreshToken", "", max_age=0, path="/", httponly=True, secure=True, samesite='Lax')
+    return response
+
 
 def forward_token(response: BaseHTTPResponse):
     resp_body_bytes = bytes(response.data)

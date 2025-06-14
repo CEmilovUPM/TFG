@@ -5,7 +5,7 @@
 {% block content %}
   <h2>Update Goal</h2>
 
-  <form method="post" action="{{ url_for('protected.update_goal', goal_id=goal.id) }}" class="goal-form">
+  <form method="post" action="{{ url_for('protected.update_goal', user_id=user_id, goal_id=goal.id) }}" class="goal-form">
     <label for="title">Title:</label>
     <input type="text" id="title" name="title" value="{{ goal.title }}" required />
 
@@ -19,7 +19,7 @@
     <input type="text" id="metric" name="metric" value="{{ goal.metric }}" required />
 
     <button type="submit">Update Goal</button>
-    <a href="{{ url_for('protected.goals_list') }}" class="cancel-link">Cancel</a>
+    <a href="{{ url_for('protected.goals_list', user_id=user_id) }}" class="cancel-link">Cancel</a>
   </form>
 
   <style>

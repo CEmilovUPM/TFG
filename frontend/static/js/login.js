@@ -34,7 +34,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
 
       if (res.ok) {
-        window.location.href = '/goals';
+        const res_id = await fetch('/profile', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        });
+
+        const body_res = await res_id.json();
+        if (body_res.data[0].isAdmin){
+            window.location.href = `/admin`;
+        }else{
+            window.location.href = `/user/${body_res.data[0].id}/goals`;
+        }
+
       } else {
         const msg = data.message
           || (data.errors ? Object.values(data.errors).join('\n') : 'Login failed.');

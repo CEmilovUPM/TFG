@@ -26,7 +26,7 @@ public class GoalService {
     private GoalRepository goalRepository;
 
 
-    public void createGoals(User user, GoalCreate request){
+    public void createGoal(User user, GoalCreate request){
         Goal goal = new Goal();
         goal.setUser(user);
         goal.setTitle(request.getTitle());
@@ -37,68 +37,47 @@ public class GoalService {
         goalRepository.save(goal);
     }
 
-
-    private boolean validOwner(User user,  Goal goal, AggregateOutput<?> out){
-        if(user.isAdmin()){
-            return true;
-        }
-        if(!Objects.equals(user.getId(), goal.getUser().getId())){
-            out.error(AggregateOutput.GOAL_NOT_FOUND,"Goal doesn't exist", HttpStatus.NOT_FOUND);
-            return false;
-        }
-        return true;
-    }
-
-    public Goal lookupGoal(User user, Long id, AggregateOutput<?> out){
-        Optional<Goal> goal = goalRepository.findById(id);
-        if (goal.isEmpty()){
+    public Goal lookupGoal(Long userId, Long id, AggregateOutput<?> out){
+        Optional<Goal> opt = goalRepository.findById(id);
+        if (opt.isEmpty()){
             out.error(AggregateOutput.GOAL_NOT_FOUND,"Goal doesn't exist", HttpStatus.NOT_FOUND);
             return null;
         }
-        return goal.get();
+        Goal goal = opt.get();
+        if(!Objects.equals(userId, goal.getUser().getId())){
+            out.error(AggregateOutput.GOAL_NOT_FOUND,"Goal doesn't exist", HttpStatus.NOT_FOUND);
+            return null;
+        }
+        return goal;
     }
 
-    public void listGoals(User user, AggregateOutput<GoalResponse> out){
 
-        List<Goal> goals;
-        if(user.isAdmin()){
-            goals = goalRepository.findAll();
-        }else{
-            goals = goalRepository.findByUserId(user.getId());
-        }
+    public void listGoals(Long userId, AggregateOutput<GoalResponse> out){
 
+        List<Goal> goals = goalRepository.findByUserId(userId);
         List<GoalResponse> list = new ArrayList<>();
         for (Goal goal : goals) {
             list.add(GoalResponse.fromEntity(goal));
         }
-
         out.setData(list);
-        out.info("message","Goals related to the user successfully retrieved",HttpStatus.OK);
+        out.info("message","Goals related to the user successfully retrieved", HttpStatus.OK);
     }
 
-    public void retrieveGoal(User user, Long id, AggregateOutput<GoalResponse> out){
-        Goal goal = lookupGoal(user, id, out);
+    public void retrieveGoal(Long userId, Long id, AggregateOutput<GoalResponse> out){
+        Goal goal = lookupGoal(userId, id, out);
         if(goal == null){
-            return;
-        }
-        if(!validOwner(user, goal, out)){
             return;
         }
         out.append(GoalResponse.fromEntity(goal));
         out.info("message","Successfully retrieved the goal",HttpStatus.OK);
-
     }
 
     @Transactional
-    public void updateGoal(User user, Long id, GoalUpdate request, AggregateOutput<GoalResponse> out) {
-        Goal goal = lookupGoal(user, id, out);
+    public void updateGoal(Long userId, Long id, GoalUpdate request, AggregateOutput<GoalResponse> out) {
+        Goal goal = lookupGoal(userId, id, out);
         if(goal == null){
             return;
         }
-        if(!validOwner(user, goal, out)){
-            return;
-        }
-
         if (request.getTitle() != null) goal.setTitle(request.getTitle());
         if (request.getMetric() != null) goal.setMetric(request.getMetric());
         if (request.getDescription() != null) goal.setDescription(request.getDescription());
@@ -109,18 +88,12 @@ public class GoalService {
     }
 
     @Transactional
-    public void deleteGoal(User user, Long id, AggregateOutput<?> out){
-        Goal goal = lookupGoal(user, id, out);
+    public void deleteGoal(Long userId, Long id, AggregateOutput<?> out){
+        Goal goal = lookupGoal(userId, id, out);
         if(goal == null){
             return;
         }
-        if(!validOwner(user, goal, out)){
-            return;
-        }
-
         goalRepository.delete(goal);
         out.info("message","Successfully deleted the goal", HttpStatus.NO_CONTENT);
     }
-
-
 }

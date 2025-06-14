@@ -3,9 +3,11 @@ package com.project.goal_tracker.controller;
 import com.project.goal_tracker.dto.LoginRequest;
 import com.project.goal_tracker.dto.RefreshRequest;
 import com.project.goal_tracker.dto.RegisterRequest;
+import com.project.goal_tracker.model.CustomUserDetails;
 import com.project.goal_tracker.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,5 +31,10 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(@RequestBody RefreshRequest request) {
         return service.refresh(request);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return service.logout(userDetails.getUser());
     }
 }

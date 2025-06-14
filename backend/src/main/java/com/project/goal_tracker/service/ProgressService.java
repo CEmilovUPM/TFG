@@ -27,11 +27,8 @@ public class ProgressService {
     @Autowired
     private ProgressRepository progressRepository;
 
-    private boolean validOwner(User user,  Goal goal, AggregateOutput<?> out){
-        if(user.isAdmin()){
-            return true;
-        }
-        if(!Objects.equals(user.getId(), goal.getUser().getId())){
+    private boolean validOwner(Long userId,  Goal goal, AggregateOutput<?> out){
+        if(!Objects.equals(userId, goal.getUser().getId())){
             out.error(AggregateOutput.GOAL_NOT_FOUND,"Goal doesn't exist", HttpStatus.NOT_FOUND);
             return false;
         }
@@ -55,18 +52,14 @@ public class ProgressService {
         return true;
     }
 
-    public Goal retrieveGoal (User user, Long goalId, AggregateOutput<?> out){
-        if (user == null) {
-            out.error(AggregateOutput.USER_NOT_FOUND, "User was not found", HttpStatus.BAD_REQUEST);
-            return null;
-        }
+    public Goal retrieveGoal (Long userId, Long goalId, AggregateOutput<?> out){
         Optional<Goal> goalOpt = goalRepository.findById(goalId);
         if(goalOpt.isEmpty()){
             out.error(AggregateOutput.GOAL_NOT_FOUND,"Goal doesn't exist", HttpStatus.NOT_FOUND);
             return null;
         }
         Goal goal = goalOpt.get();
-        if(!validOwner(user, goal, out)){
+        if(!validOwner(userId, goal, out)){
             return null;
         }
         return goal;

@@ -2,10 +2,12 @@ package com.project.goal_tracker.controller;
 
 
 import com.project.goal_tracker.dto.BanUserRequest;
+import com.project.goal_tracker.dto.ProfileResponse;
 import com.project.goal_tracker.dto.PromoteRequest;
 import com.project.goal_tracker.model.CustomUserDetails;
 import com.project.goal_tracker.service.JWTService;
 import com.project.goal_tracker.service.UserService;
+import com.project.goal_tracker.utils.AggregateOutput;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,7 +28,8 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<?> profile(@AuthenticationPrincipal CustomUserDetails userDetails){
-        return service.getProfile(userDetails.getUsername());
+        AggregateOutput<ProfileResponse> out = new AggregateOutput<>();
+        return service.getProfile(userDetails.getUsername(),out);
     }
 
 

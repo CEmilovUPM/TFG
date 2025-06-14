@@ -3,11 +3,17 @@
 {% block title %}Your Goals{% endblock %}
 
 {% block content %}
+  {% if isAdmin %}
+    <div class="back-button-container">
+      <a href="{{ url_for('protected.admin_dashboard') }}" class="go-back-button">← Go Back</a>
+    </div>
+  {% endif %}
+
   <div class="top-actions">
-    <a href="{{ url_for('protected.create_goal_form') }}" class="new-goal-button">➕ New Goal</a>
+    <a href="{{ url_for('protected.create_goal_form', user_id=user_id) }}" class="new-goal-button">➕ New Goal</a>
   </div>
 
-  <form method="get" action="{{ url_for('protected.goals_list') }}" class="goal-search-form">
+  <form method="get" action="{{ url_for('protected.goals_list', user_id=user_id) }}" class="goal-search-form">
     <input type="text" name="q" placeholder="Search goals..." value="{{ request.args.get('q', '') }}" />
     <button type="submit">Search</button>
   </form>
@@ -15,7 +21,7 @@
   {% if goals %}
     {% for goal in goals %}
       <div class="goal-container">
-        <a href="/goals/{{ goal.id }}" class="goal-link">
+        <a href="/user/{{ user_id }}/goals/{{ goal.id }}" class="goal-link">
           <div class="goal-info">
             <h2>{{ goal.title }}</h2>
             <p>{{ goal.description }}</p>
@@ -40,7 +46,8 @@
         if (!confirmDelete) return;
 
         try {
-          const res = await fetch(`/api/goal/${goalId}`, {
+          const userId = {{ user_id }};
+          const res = await fetch(`/api/user/${userId}/goal/${goalId}`, {
             method: 'DELETE',
             headers: {
               'Content-Type': 'application/json',
@@ -63,6 +70,22 @@
   </script>
 
   <style>
+    .back-button-container {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 10px;
+    }
+    .go-back-button {
+      background-color: #6c757d;
+      color: white;
+      padding: 8px 14px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .go-back-button:hover {
+      background-color: #5a6268;
+    }
     .top-actions {
       display: flex;
       justify-content: flex-end;

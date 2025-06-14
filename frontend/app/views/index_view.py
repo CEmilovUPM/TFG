@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, request
+from flask import Blueprint, render_template, session, redirect, request, json
 
 from app.backend_client import get_client
 
@@ -15,7 +15,12 @@ def login_form():
         resp = client.request("get", "user/profile", headers=headers)
 
         if resp.status == 200:
-            redirect('/home')
+            user_id = json.loads(resp.data)["data"][0]["id"]
+            is_admin = json.loads(resp.data)["data"][0]["isAdmin"]
+            if is_admin:
+                return redirect("/admin")
+            else:
+                return redirect(f'/user/{user_id}/goals')
 
 
     return render_template("index.html")

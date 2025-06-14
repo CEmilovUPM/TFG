@@ -9,7 +9,7 @@
     <div class="form-error">{{ error }}</div>
   {% endif %}
 
-  <form method="post" action="{{ url_for('protected.update_progress', goal_id=goal_id, progress_id=progress.id) }}" class="progress-form">
+  <form method="post" action="{{ url_for('protected.update_progress', user_id=user_id , goal_id=goal_id, progress_id=progress.id) }}" class="progress-form">
 
     <label for="amount">Total Desired Amount:</label>
     <input type="number" id="amount" name="amount" step="0.01" value="{{ progress.amount }}" required />
@@ -24,7 +24,7 @@
     {% endif %}
 
     <button type="submit">Update Progress</button>
-    <a href="{{ url_for('protected.single_goal', goal_id=goal_id) }}" class="cancel-link">Cancel</a>
+    <a href="{{ url_for('protected.single_goal', user_id=user_id, goal_id=goal_id) }}" class="cancel-link">Cancel</a>
   </form>
 
   <style>

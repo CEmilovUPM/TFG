@@ -7,6 +7,7 @@ import com.project.goal_tracker.model.CustomUserDetails;
 import com.project.goal_tracker.model.Goal;
 import com.project.goal_tracker.model.User;
 import com.project.goal_tracker.service.ProgressService;
+import com.project.goal_tracker.service.UserService;
 import com.project.goal_tracker.utils.AggregateOutput;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,20 +17,27 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/goals/{goalId}/progress")
+@RequestMapping("/user/{userId}/goals/{goalId}/progress")
 public class ProgressController {
 
     @Autowired
     private ProgressService progService;
 
+    @Autowired
+    private UserService userService;
+
 
 
     @GetMapping("")
     public ResponseEntity<?> listProgress(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                          @PathVariable Long userId,
                                           @PathVariable Long goalId) {
         User user = userDetails.getUser();
         AggregateOutput<ProgressResponse> out = new AggregateOutput<>();
-        Goal goal = progService.retrieveGoal(user,goalId,out);
+        if(!userService.validAction(user,userId,out)){
+            return out.toResponseEntity();
+        }
+        Goal goal = progService.retrieveGoal(userId,goalId,out);
         if(out.haveErrors()){
             return out.toResponseEntity();
         }
@@ -40,11 +48,15 @@ public class ProgressController {
 
     @GetMapping("/{progressId}")
     public ResponseEntity<?> retrieveProgress(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                              @PathVariable Long userId,
                                               @PathVariable Long goalId,
                                               @PathVariable Long progressId){
         User user = userDetails.getUser();
         AggregateOutput<ProgressResponse> out = new AggregateOutput<>();
-        Goal goal = progService.retrieveGoal(user,goalId,out);
+        if(!userService.validAction(user,userId,out)){
+            return out.toResponseEntity();
+        }
+        Goal goal = progService.retrieveGoal(userId,goalId,out);
         if(out.haveErrors()){
             return out.toResponseEntity();
         }
@@ -55,21 +67,22 @@ public class ProgressController {
 
     @PostMapping("")
     public ResponseEntity<?> createProgress(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                            @PathVariable Long userId,
                                             @PathVariable Long goalId,
                                             @RequestBody ProgressCreate request,
                                             BindingResult bindingResult) {
         User user = userDetails.getUser();
         AggregateOutput<ProgressResponse> out = new AggregateOutput<>();
-
-
         if(bindingResult.hasErrors()){
             bindingResult.getFieldErrors().forEach(error -> {
                 out.error(error.getField(), error.getDefaultMessage());
             });
             return out.setStatus(HttpStatus.BAD_REQUEST).toResponseEntity();
         }
-
-        Goal goal = progService.retrieveGoal(user,goalId,out);
+        if(!userService.validAction(user,userId,out)){
+            return out.toResponseEntity();
+        }
+        Goal goal = progService.retrieveGoal(userId,goalId,out);
         if(out.haveErrors()){
             return out.toResponseEntity();
         }
@@ -80,13 +93,16 @@ public class ProgressController {
 
     @PatchMapping("/{progressId}")
     ResponseEntity<?> updateProgress(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                     @PathVariable Long userId,
                                      @PathVariable Long goalId,
                                      @PathVariable Long progressId,
                                      @RequestBody ProgressUpdate request){
         User user = userDetails.getUser();
         AggregateOutput<ProgressResponse> out = new AggregateOutput<>();
-
-        Goal goal = progService.retrieveGoal(user,goalId,out);
+        if(!userService.validAction(user,userId,out)){
+            return out.toResponseEntity();
+        }
+        Goal goal = progService.retrieveGoal(userId,goalId,out);
         if(out.haveErrors()){
             return out.toResponseEntity();
         }
@@ -97,13 +113,15 @@ public class ProgressController {
 
     @DeleteMapping("/{progressId}")
     ResponseEntity<?> deleteProgress(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                     @PathVariable Long userId,
                                      @PathVariable Long goalId,
                                      @PathVariable Long progressId){
         User user = userDetails.getUser();
         AggregateOutput<ProgressResponse> out = new AggregateOutput<>();
-
-        Goal goal = progService.retrieveGoal(user,goalId,out);
-
+        if(!userService.validAction(user,userId,out)){
+            return out.toResponseEntity();
+        }
+        Goal goal = progService.retrieveGoal(userId,goalId,out);
         if(out.haveErrors()){
             return out.toResponseEntity();
         }
@@ -111,11 +129,4 @@ public class ProgressController {
         progService.deleteProgress(goal, progressId, out);
         return out.toResponseEntity();
     }
-
-
-
-
-
-
-
 }

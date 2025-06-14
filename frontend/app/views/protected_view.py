@@ -1,23 +1,49 @@
-from flask import Blueprint, render_template, request, redirect, json, make_response
+from flask import Blueprint, render_template, request, redirect, json, make_response, jsonify
 import re
 
 from app.backend_client import get_client, RequestBuilder
 
 protected = Blueprint("protected", __name__)
 
-@protected.route("/goals",methods=["GET"])
-def goals_list():
+
+@protected.route("/profile", methods=["GET"])
+def profile():
+    token = request.cookies.get('JWT')
+    refresh = request.cookies.get('RefreshToken')
+    if not refresh:
+        return jsonify({'error': 'unauthorized'}), 401
+
+    client = get_client()
+
+    backend_request = RequestBuilder()
+    backend_request.auth(token).refresh(refresh).set_method("get").set_endpoint("/user/profile")
+    response = client.request_reauth(backend_request)
+
+    if response.status in [401,403]:
+        return jsonify({'error': 'unauthorized'}), 401
+
+    body = json.loads(response.data)
+
+    return body, 200
+
+@protected.route("/user/<int:user_id>/goals",methods=["GET"])
+def goals_list(user_id):
     token = request.cookies.get('JWT')
     refresh = request.cookies.get('RefreshToken')
     if not refresh:
         return redirect('/')
-
     client = get_client()
+
+    user_data,_ =  profile()
+    user_data = user_data["data"][0]
+    user_data.pop("id", None)
+
+
     backend_request = ((((RequestBuilder()
                       .auth(token))
                       .refresh(refresh))
                       .set_method("get"))
-                      .set_endpoint("/goals"))
+                      .set_endpoint(f"/user/{user_id}/goals"))
     response = client.request_reauth(backend_request)
 
     if response.status in [401,403]:
@@ -34,17 +60,22 @@ def goals_list():
         filtered_goals = goals
 
     if token != backend_request.access_token:
-        resp = make_response(render_template("goals.html", goals=filtered_goals))
+        resp = make_response(render_template("goals.html",
+                                             goals=filtered_goals,
+                                             user_id=user_id,
+                                             **user_data))
         resp.set_cookie("JWT", backend_request.access_token)
         return resp
 
     return render_template("goals.html",
-                           goals=filtered_goals)
+                           goals=filtered_goals,
+                           user_id=user_id,
+                           **user_data)
 
 
 
-@protected.route("/api/goal/<int:goal_id>", methods=["DELETE"])
-def goal_action(goal_id):
+@protected.route("/api/user/<int:user_id>/goal/<int:goal_id>", methods=["DELETE"])
+def goal_delete(user_id, goal_id):
     token = request.cookies.get('JWT')
     refresh = request.cookies.get('RefreshToken')
     if not refresh:
@@ -56,7 +87,7 @@ def goal_action(goal_id):
                       .auth(token))
                       .refresh(refresh))
                       .set_method(request.method))
-                      .set_endpoint(f"/goals/{goal_id}"))
+                      .set_endpoint(f"/user/{user_id}/goals/{goal_id}"))
 
     response = client.request_reauth(backend_request)
 
@@ -67,8 +98,8 @@ def goal_action(goal_id):
         return "", response.status
     return json.loads(response.data), response.status
 
-@protected.route("/goals/<int:goal_id>", methods=["GET"])
-def single_goal(goal_id):
+@protected.route("/user/<int:user_id>/goals/<int:goal_id>", methods=["GET"])
+def single_goal(user_id, goal_id):
     token = request.cookies.get('JWT')
     refresh = request.cookies.get('RefreshToken')
     if not refresh:
@@ -80,18 +111,15 @@ def single_goal(goal_id):
                           .auth(token))
                          .refresh(refresh))
                         .set_method("get"))
-                       .set_endpoint(f"/goals/{goal_id}"))
+                       .set_endpoint(f"/user/{user_id}/goals/{goal_id}"))
     response = client.request_reauth(backend_request)
 
     if response.status in [401,403]:
         return redirect('/')
-
     goal = json.loads(response.data)["data"][0]
 
-    backend_request.set_endpoint(f"/goals/{goal_id}/progress")
-
+    backend_request.set_endpoint(f"/user/{user_id}/goals/{goal_id}/progress")
     response = client.request_reauth(backend_request)
-
     progress_list = json.loads(response.data)["data"]
 
     q = request.args.get('q', '').lower()
@@ -106,20 +134,29 @@ def single_goal(goal_id):
     for p in progress_list:
         total_amount += p["amount"]
 
+    user_data, _ = profile()
+    user_data = user_data["data"][0]
+    user_data.pop("id", None)
+
 
     if token != backend_request.access_token:
-        resp = make_response(render_template("goal.html", goal=goal,
+        resp = make_response(render_template("goal.html",
+                                             goal=goal,
                                              progress_list=filtered_progress,
-                                             progress_amount=total_amount))
+                                             progress_amount=total_amount,
+                                             user_id=user_id,
+                                             **user_data))
         resp.set_cookie("JWT", backend_request.access_token)
         return resp
 
     return render_template("goal.html", goal=goal,
                            progress_list=filtered_progress,
-                           progress_amount=total_amount)
+                           progress_amount=total_amount,
+                           user_id=user_id,
+                           **user_data)
 
-@protected.route("/goals/create-form", methods=["GET", "POST"])
-def create_goal_form():
+@protected.route("/user/<int:user_id>/goals/create-form", methods=["GET", "POST"])
+def create_goal_form(user_id):
     if request.method == "POST":
         token = request.cookies.get('JWT')
         refresh = request.cookies.get('RefreshToken')
@@ -132,7 +169,7 @@ def create_goal_form():
                               .auth(token))
                              .refresh(refresh))
                             .set_method("post"))
-                           .set_endpoint("/goals")
+                           .set_endpoint(f"/user/{user_id}/goals")
                            .set_json({
                                "title": request.form["title"],
                                "description": request.form.get("description", ""),
@@ -146,15 +183,18 @@ def create_goal_form():
             return redirect('/')
 
         if response.status == 201:
-            return redirect('/goals')
+            return redirect(f'/user/{user_id}/goals')
 
-        return render_template("goal_create_form.html", error="Failed to create goal.")
+        return render_template("goal_create_form.html",
+                               error="Failed to create goal.",
+                               user_id=user_id)
 
-    return render_template("goal_create_form.html")
+    return render_template("goal_create_form.html",
+                           user_id=user_id)
 
 
-@protected.route("/goals/<int:goal_id>/update-form")
-def update_goal_form(goal_id):
+@protected.route("/user/<int:user_id>/goals/<int:goal_id>/update-form", methods=["GET"])
+def update_goal_form(user_id, goal_id):
     token = request.cookies.get('JWT')
     refresh = request.cookies.get('RefreshToken')
     if not refresh:
@@ -165,18 +205,20 @@ def update_goal_form(goal_id):
                           .auth(token))
                          .refresh(refresh))
                         .set_method("get"))
-                       .set_endpoint(f"/goals/{goal_id}"))
+                       .set_endpoint(f"/user/{user_id}/goals/{goal_id}"))
     response = client.request_reauth(backend_request)
 
     if response.status in [401, 403]:
         return redirect('/')
 
     goal = json.loads(response.data)["data"][0]
-    return render_template("goal_update_form.html", goal=goal)
+    return render_template("goal_update_form.html",
+                           goal=goal,
+                           user_id=user_id)
 
 
-@protected.route("/goals/<int:goal_id>/update-form", methods=["POST"])
-def update_goal(goal_id):
+@protected.route("/user/<int:user_id>/goals/<int:goal_id>/update-form", methods=["POST"])
+def update_goal(user_id, goal_id):
     token = request.cookies.get('JWT')
     refresh = request.cookies.get('RefreshToken')
     if not refresh:
@@ -195,20 +237,21 @@ def update_goal(goal_id):
                          .refresh(refresh))
                         .set_method("patch")
                         .set_json(form_data))
-                       .set_endpoint(f"/goals/{goal_id}"))
+                       .set_endpoint(f"/user/{user_id}/goals/{goal_id}"))
     response = client.request_reauth(backend_request)
 
     if response.status in [201, 200]:
-        return redirect(f"/goals/{goal_id}")
+        return redirect(f"/user/{user_id}/goals/{goal_id}")
     elif response.status in [401, 403]:
         return redirect('/')
 
     return render_template("goal_update_form.html",
                                             goal=form_data,
-                                            error="Failed to update goal")
+                                            error="Failed to update goal",
+                                            user_id=user_id)
 
-@protected.route("/goals/<int:goal_id>/progress-form", methods=["GET", "POST"])
-def create_progress(goal_id):
+@protected.route("/user/<int:user_id>/goals/<int:goal_id>/progress-form", methods=["GET", "POST"])
+def create_progress(user_id, goal_id):
     token = request.cookies.get('JWT')
     refresh = request.cookies.get('RefreshToken')
     if not refresh:
@@ -219,10 +262,10 @@ def create_progress(goal_id):
                           .auth(token))
                          .refresh(refresh))
                         .set_method("get"))
-                       .set_endpoint(f"/goals/{goal_id}"))
+                       .set_endpoint(f"/user/{user_id}/goals/{goal_id}"))
     response = client.request_reauth(backend_request)
     if response.status != 200:
-        return redirect(f"/goals")
+        return redirect(f"/user/{user_id}/goals")
 
     goal = json.loads(response.data)["data"][0]
     goal_title = goal["title"]
@@ -237,7 +280,7 @@ def create_progress(goal_id):
                               .auth(token))
                              .refresh(refresh))
                             .set_method("post"))
-                           .set_endpoint(f"/goals/{goal_id}/progress")
+                           .set_endpoint(f"/user/{user_id}/goals/{goal_id}/progress")
                            .set_json(form_data))
 
         post_response = client.request_reauth(backend_request)
@@ -245,19 +288,21 @@ def create_progress(goal_id):
         body = json.loads(post_response.data)
 
         if post_response.status == 201:
-            return redirect(f"/goals/{goal_id}")
+            return redirect(f"/user/{user_id}/goals/{goal_id}")
         else:
             return render_template("progress_create_form.html",
                                    goal_id=goal_id,
                                    goal_title=goal_title,
+                                   user_id=user_id,
                                    **body["errors"])
 
     return render_template("progress_create_form.html",
                            goal_id=goal_id,
+                           user_id=user_id,
                            goal_title=goal_title)
 
-@protected.route("/api/goal/<int:goal_id>/progress/<int:progress_id>", methods=["DELETE"])
-def delete_progress(goal_id, progress_id):
+@protected.route("/api/user/<int:user_id>/goal/<int:goal_id>/progress/<int:progress_id>", methods=["DELETE"])
+def delete_progress(user_id, goal_id, progress_id):
     token = request.cookies.get('JWT')
     refresh = request.cookies.get('RefreshToken')
     if not refresh:
@@ -269,7 +314,7 @@ def delete_progress(goal_id, progress_id):
                       .auth(token))
                       .refresh(refresh))
                       .set_method("DELETE"))
-                      .set_endpoint(f"/goals/{goal_id}/progress/{progress_id}"))
+                      .set_endpoint(f"/user/{user_id}/goals/{goal_id}/progress/{progress_id}"))
 
     response = client.request_reauth(backend_request)
 
@@ -281,8 +326,8 @@ def delete_progress(goal_id, progress_id):
     return json.loads(response.data), response.status
 
 
-@protected.route("/goals/<int:goal_id>/progress/<int:progress_id>/update-form", methods=["GET"])
-def update_progress_form(goal_id, progress_id):
+@protected.route("/user/<int:user_id>/goals/<int:goal_id>/progress/<int:progress_id>/update-form", methods=["GET"])
+def update_progress_form(user_id, goal_id, progress_id):
     token = request.cookies.get('JWT')
     refresh = request.cookies.get('RefreshToken')
     if not refresh:
@@ -294,7 +339,7 @@ def update_progress_form(goal_id, progress_id):
         .auth(token)
         .refresh(refresh)
         .set_method("get")
-        .set_endpoint(f"/goals/{goal_id}/progress/{progress_id}")
+        .set_endpoint(f"/user/{user_id}/goals/{goal_id}/progress/{progress_id}")
     )
 
     response = client.request_reauth(backend_request)
@@ -304,11 +349,14 @@ def update_progress_form(goal_id, progress_id):
 
     progress = json.loads(response.data).get("data", [{}])[0]
 
-    return render_template("progress_update_form.html", progress=progress, goal_id=goal_id)
+    return render_template("progress_update_form.html",
+                           progress=progress,
+                           goal_id=goal_id,
+                           user_id=user_id)
 
 
-@protected.route("/goals/<int:goal_id>/progress/<int:progress_id>/update-form", methods=["POST"])
-def update_progress(goal_id, progress_id):
+@protected.route("/user/<int:user_id>/goals/<int:goal_id>/progress/<int:progress_id>/update-form", methods=["POST"])
+def update_progress(user_id, goal_id, progress_id):
     token = request.cookies.get('JWT')
     refresh = request.cookies.get('RefreshToken')
     if not refresh:
@@ -326,13 +374,13 @@ def update_progress(goal_id, progress_id):
         .refresh(refresh)
         .set_method("patch")
         .set_json(form_data)
-        .set_endpoint(f"/goals/{goal_id}/progress/{progress_id}")
+        .set_endpoint(f"/user/{user_id}/goals/{goal_id}/progress/{progress_id}")
     )
 
     response = client.request_reauth(backend_request)
 
     if response.status in [200, 201]:
-        return redirect(f"/goals/{goal_id}")
+        return redirect(f"/user/{user_id}/goals/{goal_id}")
     elif response.status in [401, 403]:
         return redirect('/')
 
@@ -341,7 +389,7 @@ def update_progress(goal_id, progress_id):
         .auth(token)
         .refresh(refresh)
         .set_method("get")
-        .set_endpoint(f"/goals/{goal_id}/progress/{progress_id}")
+        .set_endpoint(f"/user/{user_id}/goals/{goal_id}/progress/{progress_id}")
     )
     get_response = client.request_reauth(get_request)
     progress = json.loads(get_response.data).get("data", [{}])[0]
@@ -351,7 +399,50 @@ def update_progress(goal_id, progress_id):
     return render_template("progress_update_form.html",
                            progress=progress,
                            goal_id=goal_id,
+                           user_id=user_id,
                            **body["errors"])
+
+@protected.route("/admin", methods=["GET"])
+def admin_dashboard():
+    token = request.cookies.get("JWT")
+    refresh = request.cookies.get("RefreshToken")
+    if not refresh:
+        return redirect("/")
+
+    client = get_client()
+
+    user_data, _ = profile()
+    user_data = user_data["data"][0]
+
+    if not user_data.get("isAdmin", False):
+        return redirect(f"/user/{user_data['id']}/goals")
+
+    backend_request = (
+        RequestBuilder()
+        .auth(token)
+        .refresh(refresh)
+        .set_method("get")
+        .set_endpoint("/user")
+    )
+    response = client.request_reauth(backend_request)
+
+    if response.status != 200:
+        return redirect("/")
+
+    q = request.args.get('q', '').lower()
+
+    users = json.loads(response.data)["data"]
+
+    if q:
+        pattern = re.compile(re.escape(q), re.IGNORECASE)
+        filtered_users = [u for u in users if pattern.search(u['name']) or pattern.search(u['email'])  ]
+    else:
+        filtered_users = users
+
+    return render_template("admin_dashboard.html",
+                           users=filtered_users,
+                           **user_data)
+
 
 def trim_float(value):
     try:

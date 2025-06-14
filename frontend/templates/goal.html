@@ -3,13 +3,16 @@
 {% block title %}Goal Details{% endblock %}
 
 {% block content %}
-  <a href="{{ url_for('protected.goals_list') }}" class="back-button">← Go Back</a>
+  <div class="back-button-container">
+    <a href="{{ url_for('protected.goals_list', user_id=user_id) }}" class="back-button">← Go Back</a>
+  </div>
+
 
   <div class="goal-details">
     <div class="goal-header">
       <h2>{{ goal.title }}</h2>
       <div class="goal-actions">
-        <a href="/goals/{{ goal.id }}/update-form" class="update-button">✏️ Update</a>
+        <a href="{{ url_for('protected.update_goal_form', user_id=user_id, goal_id=goal.id) }}" class="update-button">✏️ Update</a>
         <button class="delete-button" data-goal-id="{{ goal.id }}" title="Delete Goal">🗑️</button>
       </div>
     </div>
@@ -21,10 +24,10 @@
   <hr>
   <div class="progress-header-bar">
     <h3>Progress Entries</h3>
-    <a href="{{ url_for('protected.create_progress', goal_id=goal.id) }}" class="add-progress-button">➕ Add Progress</a>
+    <a href="{{ url_for('protected.create_progress', user_id=user_id, goal_id=goal.id) }}" class="add-progress-button">➕ Add Progress</a>
   </div>
   {% if progress_list %}
-    <form method="get" action="{{ url_for('protected.single_goal', goal_id=goal.id) }}" class="progress-search-form">
+    <form method="get" action="{{ url_for('protected.single_goal', user_id=user_id, goal_id=goal.id) }}" class="progress-search-form">
         <input type="text" name="q" placeholder="Search progress..." value="{{ request.args.get('q', '') }}" />
         <button type="submit">Search</button>
     </form>
@@ -34,7 +37,7 @@
           <div class="progress-header">
             <p><strong>Date:</strong> {{ progress.date }}</p>
             <div class="progress-entry-actions">
-              <a href="{{ url_for('protected.update_progress_form', goal_id=goal.id, progress_id=progress.id) }}" class="progress-update-button" title="Edit Progress">✏️</a>
+              <a href="{{ url_for('protected.update_progress_form', user_id=user_id, goal_id=goal.id, progress_id=progress.id) }}" class="progress-update-button" title="Edit Progress">✏️</a>
               <button class="progress-delete-button" data-goal-id="{{ goal.id }}" data-progress-id="{{ progress.id }}" title="Delete Progress">🗑️</button>
             </div>
           </div>
@@ -54,8 +57,9 @@
       const confirmDelete = confirm("Are you sure you want to delete this goal?");
       if (!confirmDelete) return;
 
+      const userId = {{ user_id }};
       try {
-        const res = await fetch(`/api/goal/${goalId}`, {
+        const res = await fetch(`/api/user/${userId}/goal/${goalId}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -64,7 +68,7 @@
         });
 
         if (res.status === 204) {
-          window.location.href = "/goals";
+          window.location.href = `/user/${userId}/goals`;
         } else {
           const data = await res.json();
           alert(data.message || "Failed to delete goal.");
@@ -85,7 +89,8 @@
       if (!confirmDelete) return;
 
       try {
-        const res = await fetch(`/api/goal/${goalId}/progress/${progressId}`, {
+        const userId = {{ user_id }};
+        const res = await fetch(`/api/user/${userId}/goal/${goalId}/progress/${progressId}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -164,15 +169,23 @@
       background-color: #fff;
     }
 
+
+    .back-button-container {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 10px;
+    }
     .back-button {
-      display: inline-block;
-      margin-bottom: 20px;
+      background-color: #6c757d;
+      color: white;
+      padding: 8px 14px;
       text-decoration: none;
-      color: #007BFF;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .back-button:hover {
+      background-color: #5a6268;
     }
 
-    .back-button:hover {
-      text-decoration: underline;
-    }
   </style>
 {% endblock %}

@@ -19,10 +19,7 @@ import com.project.goal_tracker.dto.UserResponse;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -41,20 +38,20 @@ public class UserService {
 
 
 
-    public ResponseEntity<?> getProfile(String email){
-        AggregateOutput<ProfileResponse> out = new AggregateOutput<>();
+    public ResponseEntity<?> getProfile(String email,AggregateOutput<ProfileResponse> out){
+
         User user =  userRepository.findByEmail(email);
         if (user == null){
             out.error("user_not_found","User couldn't be found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(out.getOutput());
         }else{
-            out.append(new ProfileResponse(user.getName(),user.getEmail()));
+            out.append(new ProfileResponse(user.getId(), user.getName(),user.getEmail(),user.isAdmin()));
             return ResponseEntity.status(HttpStatus.OK).body(out.getOutput());
         }
 
     }
 
-    //login
+
     public ResponseEntity<?> verify(LoginRequest request) {
 
         AggregateOutput<String> out = new AggregateOutput<>();
@@ -379,5 +376,40 @@ public class UserService {
         out.setData(list);
         out.info("message","Users succesfully retrieved",HttpStatus.OK);
         return out.toResponseEntity();
+    }
+
+    public User getUser(Long userId, AggregateOutput<?> out) {
+        Optional<User> opt = userRepository.findById(userId);
+        out.error("user_not_found", "User not found", HttpStatus.NOT_FOUND);
+        if (opt.isEmpty()) return null;
+        return opt.get();
+    }
+
+    public boolean validAction(User user, Long userId, AggregateOutput<?> out) {
+        if (user == null){
+            out.error("user_not_found","User could not be found", HttpStatus.NOT_FOUND);
+            return false;
+        }
+        Optional<User> targetUser = this.userRepository.findById(userId);
+        if(targetUser.isEmpty()){
+            out.error("user_not_found","User could not be found", HttpStatus.NOT_FOUND);
+            return false;
+        }
+        if (user.isAdmin()){
+            return true;
+        }
+        if(Objects.equals(user.getId(), userId)){
+            return true;
+        }
+        out.error("illegal_action","You do not have permission to perform this action", HttpStatus.FORBIDDEN);
+        return false;
+    }
+
+    public ResponseEntity<?> logout(User user) {
+        AggregateOutput<String> out = new AggregateOutput<>();
+        user.setRefreshTokenExpiry(LocalDateTime.now().minusHours(1));
+        this.userRepository.save(user);
+        out.info("logged_out","Successfully logged out");
+        return out.setStatus(HttpStatus.OK).toResponseEntity();
     }
 }
