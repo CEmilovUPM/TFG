@@ -18,11 +18,62 @@
             <p>User ID: {{ user.id }}</p>
           </div>
         </a>
+        <div class="admin-actions">
+          <button class="action-button ban-toggle" data-user-id="{{ user.email }}" data-action="{{ 'unban' if user.banned else 'ban' }}">
+            {{ 'Unban' if user.banned else 'Ban' }}
+          </button>
+          <button class="action-button promote-toggle" data-user-id="{{ user.email }}" data-action="{{ 'demote' if user.admin else 'promote' }}">
+            {{ 'Demote' if user.admin else 'Promote' }}
+          </button>
+        </div>
       </div>
     {% endfor %}
   {% else %}
     <p>No users found.</p>
   {% endif %}
+
+<script>
+  function handleAction(buttonClass, confirmMessageBase) {
+    document.querySelectorAll(buttonClass).forEach(button => {
+      button.addEventListener('click', async e => {
+        e.preventDefault();
+        const userId = button.getAttribute('data-user-id');
+        const action = button.getAttribute('data-action');
+        const confirmMsg = `${confirmMessageBase} this user?`;
+        if (!confirm(confirmMsg)) return;
+
+        try {
+          const res = await fetch(`/api/admin/user/${userId}/${action}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+            }
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            alert(data?.info?.[0]?.message || "Action completed successfully.");
+            window.location.reload();
+          } else {
+            const msg =
+              data?.error?.[0]?.message ||
+              data?.warning?.[0]?.message ||
+              "Action failed. Please try again.";
+            alert(msg);
+          }
+        } catch (err) {
+          console.error("Request failed:", err);
+          alert("Unexpected error occurred while performing action.");
+        }
+      });
+    });
+  }
+
+  handleAction('.ban-toggle', 'Are you sure you want to perform this action');
+  handleAction('.promote-toggle', 're you sure you want to perform this action');
+</script>
 
   <style>
     .goal-search-form {
@@ -71,6 +122,37 @@
     .goal-info p {
       margin: 2px 0;
       font-size: 0.95rem;
+    }
+
+    .admin-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .action-button {
+      padding: 5px 10px;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: white;
+    }
+
+    .ban-toggle {
+      background-color: #dc3545;
+    }
+
+    .ban-toggle:hover {
+      background-color: #c82333;
+    }
+
+    .promote-toggle {
+      background-color: #28a745;
+    }
+
+    .promote-toggle:hover {
+      background-color: #218838;
     }
   </style>
 {% endblock %}

@@ -487,6 +487,36 @@ def admin_dashboard():
                            users=filtered_users,
                            **user_data)
 
+@protected.route("/api/admin/user/<string:user_email>/<string:action>", methods=["POST"])
+def admin_action(user_email, action):
+    token = request.cookies.get("JWT")
+    refresh = request.cookies.get("RefreshToken")
+    if not refresh:
+        return redirect("/")
+
+    client = get_client()
+
+    user_data, _ = profile()
+    user_data = user_data["data"][0]
+
+    if not user_data.get("isAdmin", False):
+        return redirect(f"/user/{user_data['id']}/goals")
+
+    backend_request = (
+        RequestBuilder()
+        .auth(token)
+        .refresh(refresh)
+        .set_method("post")
+        .set_endpoint(f"/user/{action}")
+        .set_json({"targetUser":user_email})
+    )
+    response = client.request_reauth(backend_request)
+
+    if response.status in [401,403,404]:
+        return None, response.status
+
+    return json.loads(response.data), response.status
+
 
 def trim_float(value):
     try:

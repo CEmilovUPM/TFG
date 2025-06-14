@@ -70,7 +70,7 @@ public class UserController {
                                      @RequestBody BanUserRequest request) {
         return service.manageAccountStatus(
                 userDetails.getUsername(),
-                request.getUser(),
+                request.getTargetUser(),
                 true);
     }
 
@@ -80,7 +80,7 @@ public class UserController {
                                        @RequestBody BanUserRequest request) {
         return service.manageAccountStatus(
                 userDetails.getUsername(),
-                request.getUser(),
+                request.getTargetUser(),
                 false);
     }
 

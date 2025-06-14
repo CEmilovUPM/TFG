@@ -2,13 +2,13 @@ package com.project.goal_tracker.dto;
 
 public class BanUserRequest {
 
-    private String user;
+    private String targetUser;
 
-    public String getUser() {
-        return user;
+    public String getTargetUser() {
+        return targetUser;
     }
 
-    public void setUser(String user) {
-        this.user = user;
+    public void setTargetUser(String targetUser) {
+        this.targetUser = targetUser;
     }
 }

@@ -345,8 +345,9 @@ public class UserService {
             out.warning("operation_not_allowed","You cannot ban/unban yourself");
             return out.setStatus(HttpStatus.BAD_REQUEST).toResponseEntity();
         }
-
+        System.out.println(targetUser);
         User user = this.userRepository.findByEmail(targetUser);
+
 
         if (user == null) {
             out.error("user_does_not_exist", "The user does not exist.");
