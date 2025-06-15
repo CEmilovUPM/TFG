@@ -13,4 +13,4 @@ ENV FLASK_RUN_HOST=0.0.0.0
 ENV BACKEND_URL=http://backend-service.testing.svc.cluster.local:8000/
 
 CMD pip install --no-cache-dir -r requirements.txt && \
-    flask run --host=0.0.0.0
+     gunicorn -w 2 -b 0.0.0.0:5000 'app.__init__:create_app()'
