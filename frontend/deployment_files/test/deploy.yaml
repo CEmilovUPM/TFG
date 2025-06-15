@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-frontend
+  namespace: testing
+  labels:
+    app: flask-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask-frontend
+  template:
+    metadata:
+      labels:
+        app: flask-frontend
+    spec:
+      containers:
+        - name: flask-frontend
+          image: flask-frontend:latest  
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+          env:
+            - name: FLASK_RUN_HOST
+              value: 0.0.0.0
+            - name: BACKEND_URL
+              value: http://backend-service.testing.svc.cluster.local:8000/
+          volumeMounts:
+            - name: project-source
+              mountPath: /app
+      volumes:
+        - name: project-source
+          hostPath:
+            path: /mnt/app
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-frontend
+  namespace: testing
+spec:
+  type: NodePort
+  selector:
+    app: flask-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+      nodePort: 30090
