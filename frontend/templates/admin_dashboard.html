@@ -1,36 +1,54 @@
+<!-- admin_dashboard.html -->
 {% extends "base.html" %}
 
-{% block title %}Admin Dashboard{% endblock %}
-
 {% block content %}
-  <form method="get" action="{{ url_for('protected.admin_dashboard') }}" class="goal-search-form">
-    <input type="text" name="q" placeholder="Search users..." value="{{ request.args.get('q', '') }}" />
-    <button type="submit">Search</button>
+<div class="container">
+  <!-- Search Form -->
+  <form method="get" action="{{ url_for('protected.admin_dashboard') }}" class="mb-4">
+    <div class="input-group">
+      <input type="text" name="q" class="form-control" placeholder="Search users..." value="{{ request.args.get('q', '') }}">
+      <button class="btn btn-primary" type="submit">Search</button>
+    </div>
   </form>
 
+  <!-- User List -->
   {% if users %}
     {% for user in users %}
-      <div class="goal-container">
-        <a href="{{ url_for('protected.goals_list', user_id=user.id) }}" class="goal-link">
-          <div class="goal-info">
-            <h2>{{ user.name }} {% if user.admin %}(Admin){% endif %}</h2>
-            <p>{{ user.email }}</p>
-            <p>User ID: {{ user.id }}</p>
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="card-title">
+                {{ user.name }} 
+                {% if user.admin %}<span class="badge bg-success">Admin</span>{% endif %}
+                {% if user.banned %}<span class="badge bg-danger">Banned</span>{% endif %}
+              </h5>
+              <p class="card-text text-muted mb-1">{{ user.email }}</p>
+              <p class="card-text"><small class="text-muted">User ID: {{ user.id }}</small></p>
+            </div>
+            <div>
+              <a href="{{ url_for('protected.goals_list', user_id=user.id) }}" class="btn btn-sm btn-outline-primary me-1">
+                View Goals
+              </a>
+              <button class="btn btn-sm btn-danger ban-toggle action-button" 
+                      data-user-id="{{ user.email }}" 
+                      data-action="{{ 'unban' if user.banned else 'ban' }}">
+                {{ 'Unban' if user.banned else 'Ban' }}
+              </button>
+              <button class="btn btn-sm btn-warning promote-toggle action-button" 
+                      data-user-id="{{ user.email }}" 
+                      data-action="{{ 'demote' if user.admin else 'promote' }}">
+                {{ 'Demote' if user.admin else 'Promote' }}
+              </button>
+            </div>
           </div>
-        </a>
-        <div class="admin-actions">
-          <button class="action-button ban-toggle" data-user-id="{{ user.email }}" data-action="{{ 'unban' if user.banned else 'ban' }}">
-            {{ 'Unban' if user.banned else 'Ban' }}
-          </button>
-          <button class="action-button promote-toggle" data-user-id="{{ user.email }}" data-action="{{ 'demote' if user.admin else 'promote' }}">
-            {{ 'Demote' if user.admin else 'Promote' }}
-          </button>
         </div>
       </div>
     {% endfor %}
   {% else %}
-    <p>No users found.</p>
+    <div class="alert alert-info">No users found</div>
   {% endif %}
+</div>
 
 <script>
   function handleAction(buttonClass, confirmMessageBase) {
@@ -74,85 +92,4 @@
   handleAction('.ban-toggle', 'Are you sure you want to perform this action');
   handleAction('.promote-toggle', 're you sure you want to perform this action');
 </script>
-
-  <style>
-    .goal-search-form {
-      margin: 15px 0;
-      display: flex;
-      gap: 10px;
-    }
-
-    .goal-search-form input {
-      flex: 1;
-      padding: 6px;
-    }
-
-    .goal-search-form button {
-      padding: 6px 12px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .goal-search-form button:hover {
-      background-color: #0056b3;
-    }
-
-    .goal-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-
-    .goal-link {
-      flex-grow: 1;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .goal-info h2 {
-      margin: 0 0 5px;
-    }
-
-    .goal-info p {
-      margin: 2px 0;
-      font-size: 0.95rem;
-    }
-
-    .admin-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .action-button {
-      padding: 5px 10px;
-      font-size: 0.85rem;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      color: white;
-    }
-
-    .ban-toggle {
-      background-color: #dc3545;
-    }
-
-    .ban-toggle:hover {
-      background-color: #c82333;
-    }
-
-    .promote-toggle {
-      background-color: #28a745;
-    }
-
-    .promote-toggle:hover {
-      background-color: #218838;
-    }
-  </style>
 {% endblock %}

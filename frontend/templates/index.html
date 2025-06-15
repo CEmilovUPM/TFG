@@ -1,92 +1,108 @@
+<!-- index.html (login/register) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Login / Register</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-    /* simple hide/show for auth toggling */
-    .hidden { display: none; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login / Register</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+    }
+    .auth-container {
+      max-width: 400px;
+      margin: 0 auto;
+      box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
-<div class="auth-container container">
-    <h1 id="form-title">Login</h1>
+  <div class="container">
+    <div class="auth-container card p-4">
+      <h1 class="text-center mb-4" id="form-title">Login</h1>
 
-    <!-- LOGIN FORM -->
-    <form id="login-form">
-        <div class="form-group">
-            <label for="login-email">Email</label>
-            <input type="email" id="login-email" placeholder="Your email address" required />
+      <!-- LOGIN FORM -->
+      <form id="login-form">
+        <div class="mb-3">
+          <label for="login-email" class="form-label">Email</label>
+          <input type="email" id="login-email" class="form-control" placeholder="Your email address" required>
         </div>
 
-        <div class="form-group">
-            <label for="login-password">Password</label>
-            <input type="password" id="login-password" placeholder="Enter your password" required />
+        <div class="mb-3">
+          <label for="login-password" class="form-label">Password</label>
+          <input type="password" id="login-password" class="form-control" placeholder="Enter your password" required>
         </div>
 
-        <div id="login-response" class="response-message"></div>
-        <button type="submit">Login</button>
-        <p class="toggle-line">
-            Don't have an account?
-            <a href="#" id="to-register">Register here</a>
+        <div id="login-response" class="alert d-none mb-3"></div>
+        <button type="submit" class="btn btn-primary w-100 mb-3">Login</button>
+        <p class="text-center">
+          Don't have an account?
+          <a href="#" id="to-register" class="text-decoration-none">Register here</a>
         </p>
-    </form>
+      </form>
 
-    <!-- REGISTER FORM -->
-    <form id="register-form" class="hidden">
-        <div class="form-group">
-            <label for="reg-name">Name</label>
-            <input type="text" id="reg-name" placeholder="Your full name" />
-            <div id="name-error" class="error-message"></div>
+      <!-- REGISTER FORM -->
+      <form id="register-form" class="d-none">
+        <div class="mb-3">
+          <label for="reg-name" class="form-label">Name</label>
+          <input type="text" id="reg-name" class="form-control" placeholder="Your full name">
+          <div id="name-error" class="form-text text-danger"></div>
         </div>
 
-        <div class="form-group">
-            <label for="reg-email">Email</label>
-            <input type="email" id="reg-email" placeholder="Your email address" />
-            <div id="email-error" class="error-message"></div>
+        <div class="mb-3">
+          <label for="reg-email" class="form-label">Email</label>
+          <input type="email" id="reg-email" class="form-control" placeholder="Your email address">
+          <div id="email-error" class="form-text text-danger"></div>
         </div>
 
-        <div class="form-group">
-            <label for="reg-password">Password</label>
-            <input type="password" id="reg-password" placeholder="Enter a password" />
-            <div id="password-error" class="error-message"></div>
+        <div class="mb-3">
+          <label for="reg-password" class="form-label">Password</label>
+          <input type="password" id="reg-password" class="form-control" placeholder="Enter a password">
+          <div id="password-error" class="form-text text-danger"></div>
         </div>
 
-        <div class="form-group">
-            <label for="reg-confirm-password">Confirm Password</label>
-            <input type="password" id="reg-confirm-password" placeholder="Repeat your password" />
-            <div id="confirm-error" class="error-message"></div>
+        <div class="mb-3">
+          <label for="reg-confirm-password" class="form-label">Confirm Password</label>
+          <input type="password" id="reg-confirm-password" class="form-control" placeholder="Repeat your password">
+          <div id="confirm-error" class="form-text text-danger"></div>
         </div>
 
-        <div id="general-error" class="error-message"></div>
-        <button type="submit">Register</button>
-        <p class="toggle-line">
-            Already have an account?
-            <a href="#" id="to-login">Login here</a>
+        <div id="general-error" class="alert alert-danger d-none mb-3"></div>
+        <button type="submit" class="btn btn-primary w-100 mb-3">Register</button>
+        <p class="text-center">
+          Already have an account?
+          <a href="#" id="to-login" class="text-decoration-none">Login here</a>
         </p>
-    </form>
-</div>
+      </form>
+    </div>
+  </div>
 
-<!-- load handlers -->
-<script src="{{ url_for('static', filename='js/login.js') }}"></script>
-<script src="{{ url_for('static', filename='js/register.js') }}"></script>
-<!-- toggle logic -->
-<script>
-    const loginForm      = document.getElementById('login-form');
-    const registerForm   = document.getElementById('register-form');
-    const formTitle      = document.getElementById('form-title');
+  <!-- load handlers -->
+  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/register.js') }}"></script>
+  <!-- toggle logic -->
+  <script>
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const formTitle = document.getElementById('form-title');
+
     document.getElementById('to-register').addEventListener('click', e => {
       e.preventDefault();
-      loginForm.classList.add('hidden');
-      registerForm.classList.remove('hidden');
+      loginForm.classList.add('d-none');
+      registerForm.classList.remove('d-none');
       formTitle.innerText = 'Register';
     });
+
     document.getElementById('to-login').addEventListener('click', e => {
       e.preventDefault();
-      registerForm.classList.add('hidden');
-      loginForm.classList.remove('hidden');
+      registerForm.classList.add('d-none');
+      loginForm.classList.remove('d-none');
       formTitle.innerText = 'Login';
     });
   </script>

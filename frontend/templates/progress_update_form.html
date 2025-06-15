@@ -1,77 +1,35 @@
+<!-- progress_update_form.html -->
 {% extends "base.html" %}
 
-{% block title %}Update Progress{% endblock %}
-
 {% block content %}
-  <h2>Update Progress</h2>
+<div class="container">
+  <h2 class="mb-4">Update Progress</h2>
 
   {% if error %}
-    <div class="form-error">{{ error }}</div>
+    <div class="alert alert-danger mb-3">{{ error }}</div>
   {% endif %}
 
-  <form method="post" action="{{ url_for('protected.update_progress', user_id=user_id , goal_id=goal_id, progress_id=progress.id) }}" class="progress-form">
+  <form method="post" action="{{ url_for('protected.update_progress', user_id=user_id , goal_id=goal_id, progress_id=progress.id) }}" class="card p-4">
+    <div class="mb-3">
+      <label for="amount" class="form-label">Amount:</label>
+      <input type="number" id="amount" name="amount" step="0.01" value="{{ progress.amount }}" class="form-control" required>
+      {% if amount_must_be_positive %}
+      <div class="form-text text-danger">{{ amount_must_be_positive }}</div>
+      {% endif %}
+    </div>
 
-    <label for="amount">Total Desired Amount:</label>
-    <input type="number" id="amount" name="amount" step="0.01" value="{{ progress.amount }}" required />
-    {% if amount_must_be_positive %}
-    <p style="color: red;">{{ amount_must_be_positive }}</p>
-    {% endif %}
+    <div class="mb-3">
+      <label for="updateNote" class="form-label">Note:</label>
+      <textarea id="updateNote" name="updateNote" rows="3" class="form-control">{{ progress.updateNote }}</textarea>
+      {% if update_note_is_blank %}
+      <div class="form-text text-danger">{{ update_note_is_blank }}</div>
+      {% endif %}
+    </div>
 
-    <label for="updateNote">Note:</label>
-    <textarea id="updateNote" name="updateNote" rows="3">{{ progress.updateNote }}</textarea>
-    {% if update_note_is_blank %}
-    <p style="color: red;">{{ update_note_is_blank }}</p>
-    {% endif %}
-
-    <button type="submit">Update Progress</button>
-    <a href="{{ url_for('protected.single_goal', user_id=user_id, goal_id=goal_id) }}" class="cancel-link">Cancel</a>
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-success flex-grow-1">Update Progress</button>
+      <a href="{{ url_for('protected.single_goal', user_id=user_id, goal_id=goal_id) }}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
   </form>
-
-  <style>
-    .progress-form {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-width: 500px;
-    }
-
-    .progress-form input,
-    .progress-form textarea {
-      padding: 8px;
-      font-size: 1rem;
-      width: 100%;
-    }
-
-    .progress-form button {
-      background-color: #28a745;
-      color: white;
-      padding: 10px;
-      border: none;
-      font-size: 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .progress-form button:hover {
-      background-color: #218838;
-    }
-
-    .cancel-link {
-      margin-top: 5px;
-      display: inline-block;
-      color: #888;
-      text-decoration: underline;
-    }
-
-    .cancel-link:hover {
-      color: #555;
-    }
-
-    .form-error {
-      color: red;
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
-  </style>
+</div>
 {% endblock %}
