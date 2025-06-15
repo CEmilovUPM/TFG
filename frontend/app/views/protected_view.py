@@ -149,6 +149,12 @@ def single_goal(user_id, goal_id):
     response = client.request_reauth(backend_request)
     progress_list = json.loads(response.data)["data"]
 
+    date = request.args.get('date', '').lower()
+
+    if date:
+        progress_list = [p for p in progress_list if p["date"] == date]
+
+
     q = request.args.get('q', '').lower()
 
     if q:
@@ -156,6 +162,8 @@ def single_goal(user_id, goal_id):
         filtered_progress = [p for p in progress_list if pattern.search(p['updateNote'])]
     else:
         filtered_progress = progress_list
+
+
 
     total_amount = 0.0
     for p in progress_list:
