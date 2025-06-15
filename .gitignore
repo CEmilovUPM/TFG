@@ -34,6 +34,7 @@ build/
 
 __pycache__/
 *.py[cod]
+frontend/__pycache__/*
 
 venv/
 backend/src/main/resources/application-secret.properties

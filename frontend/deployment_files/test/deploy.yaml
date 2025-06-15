@@ -26,6 +26,8 @@ spec:
               value: 0.0.0.0
             - name: BACKEND_URL
               value: http://backend-service.testing.svc.cluster.local:8000/
+            - name: PYTHONPATH
+              value: /app/frontend 
           volumeMounts:
             - name: project-source
               mountPath: /app
