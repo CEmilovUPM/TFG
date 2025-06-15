@@ -521,6 +521,6 @@ def admin_action(user_email, action):
 def trim_float(value):
     try:
         f = float(value)
-        return int(f) if f.is_integer() else f
+        return int(f) if f.is_integer() else round(f,2)
     except (ValueError, TypeError):
         return value

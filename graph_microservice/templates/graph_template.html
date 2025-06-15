@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+  <a href="/user/{{ user_id }}/goal/{{ goal_id }}" class="btn btn-secondary mb-3">
+    ← Go Back
+  </a>
+
+  <div class="mb-3 row">
+    <div class="col-auto">
+      <label for="data" class="form-label">Pick month:</label>
+      <input
+        name="data"
+        id="data"
+        type="month"
+        class="form-control rounded-3 shadow-sm px-3 py-2"
+      />
+    </div>
+  </div>
+
+  <div id="graph-container">
+    {{ graph_html|safe }}
+  </div>
+</div>
+
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<script>
+const graphDiv = document.getElementById('graph-container');
+
+function attachClickHandler() {
+  graphDiv.on('plotly_click', function(eventData) {
+    if (!eventData || !eventData.points || eventData.points.length === 0) return;
+
+    const point = eventData.points[0];
+    const clickedDate = point.x;
+
+    // Insert user_id and goal_id from template variables
+    const userId = {{ user_id }};
+    const goalId = {{ goal_id }};
+    const redirectUrl = `/user/${userId}/goal/${goalId}?date=${clickedDate}`;
+
+    window.location.href = redirectUrl;
+  });
+}
+
+document.getElementById('data').addEventListener('change', function () {
+  const selectedMonth = this.value;
+
+  const url = new URL(window.location.href);
+  url.searchParams.set('month', selectedMonth);
+  url.searchParams.set('partial', 'true');
+
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+        const config = {
+          staticPlot: false,
+          modeBarButtonsToRemove: ['lasso2d', 'select2d', 'zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'pan2d'],
+          displayModeBar: true
+        };
+
+        Plotly.react(graphDiv, data.data, data.layout, config);
+      attachClickHandler();
+    })
+    .catch(error => {
+      console.error('Error fetching updated graph:', error);
+    });
+});
+
+attachClickHandler();
+
+</script>
+{% endblock %}
