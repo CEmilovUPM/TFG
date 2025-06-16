@@ -9,9 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -106,6 +104,15 @@ public class UserService {
                 out.error("message", "Invalid credentials");
                 return out.setStatus(HttpStatus.UNAUTHORIZED).toResponseEntity();
             }
+        } catch (InternalAuthenticationServiceException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof DisabledException) {
+                out.error("message", "User account is banned");
+                return out.setStatus(HttpStatus.FORBIDDEN).toResponseEntity();
+            }
+
+            out.error("message", "Authentication failed");
+            return out.setStatus(HttpStatus.UNAUTHORIZED).toResponseEntity();
         } catch (BadCredentialsException e) {
             // Catching invalid credentials specifically
             out.error("message", "Invalid credentials");
@@ -117,7 +124,7 @@ public class UserService {
     }
 
     public String generateRefreshToken() {
-        return UUID.randomUUID().toString(); // secure random string
+        return UUID.randomUUID().toString();
     }
 
     public ResponseEntity<?> refresh(RefreshRequest request){

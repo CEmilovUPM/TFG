@@ -52,7 +52,9 @@ def goals_list(user_id):
         return redirect('/')
     client = get_client()
 
-    user_data,_ =  profile()
+    user_data,status =  profile()
+    if status in [401, 403]:
+        return redirect('/')
     user_data = user_data["data"][0]
     token_user_id = user_data.pop("id", None)
 
@@ -169,7 +171,9 @@ def single_goal(user_id, goal_id):
     for p in progress_list:
         total_amount += p["amount"]
 
-    user_data, _ = profile()
+    user_data, status = profile()
+    if status in [401, 403]:
+        return redirect('/')
     user_data = user_data["data"][0]
     token_user_id = user_data.pop("id", None)
 
@@ -463,7 +467,9 @@ def admin_dashboard():
 
     client = get_client()
 
-    user_data, _ = profile()
+    user_data, status = profile()
+    if status in [401, 403]:
+        return redirect('/')
     user_data = user_data["data"][0]
 
     if not user_data.get("isAdmin", False):
@@ -504,7 +510,9 @@ def admin_action(user_email, action):
 
     client = get_client()
 
-    user_data, _ = profile()
+    user_data, status = profile()
+    if status in [401, 403]:
+        return redirect('/')
     user_data = user_data["data"][0]
 
     if not user_data.get("isAdmin", False):

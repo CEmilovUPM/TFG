@@ -11,9 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const generalErrDiv    = document.getElementById('general-error');
 
   function clearErrors() {
-    [nameErrDiv, emailErrDiv, passErrDiv, confirmErrDiv, generalErrDiv]
-      .forEach(d => { d.innerText = ''; d.style.color = ''; });
-  }
+  [nameErrDiv, emailErrDiv, passErrDiv, confirmErrDiv, generalErrDiv]
+    .forEach(d => {
+      d.innerText = '';
+      d.style.color = '';
+      d.classList.add('d-none');
+    });
+}
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
@@ -57,18 +61,24 @@ document.addEventListener('DOMContentLoaded', () => {
           if (key.startsWith('name_')) {
             nameErrDiv.style.color = 'red';
             nameErrDiv.innerText = msg;
+            nameErrDiv.classList.remove('d-none');
           } else if (key.startsWith('email_')) {
             emailErrDiv.style.color = 'red';
             emailErrDiv.innerText = msg;
+            emailErrDiv.classList.remove('d-none');
           } else if (key === 'passwords_dont_match' || key.startsWith('confirm')) {
             confirmErrDiv.style.color = 'red';
             confirmErrDiv.innerText = msg;
+            confirmErrDiv.classList.remove('d-none');
           } else if (key.startsWith('password_')) {
             passErrDiv.style.color = 'red';
             passErrDiv.innerText = msg;
+            passErrDiv.classList.remove('d-none');
           } else {
             generalErrDiv.style.color = 'red';
             generalErrDiv.innerText += msg + '\n';
+            generalErrDiv.classList.remove('d-none');
+
           }
         });
       }
@@ -76,10 +86,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.info.email_already_registered) {
           emailErrDiv.style.color = 'red';
           emailErrDiv.innerText = data.info.email_already_registered;
+          emailErrDiv.classList.remove('d-none');
         }
         if (data.info.message) {
           generalErrDiv.style.color = 'red';
           generalErrDiv.innerText += data.info.message;
+          generalErrDiv.classList.remove('d-none');
         }
       }
 
@@ -87,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Register error:', err);
       generalErrDiv.style.color = 'red';
       generalErrDiv.innerText = 'An error occurred. Please try again.';
+      generalErrDiv.classList.remove('d-none');
     }
   });
 });

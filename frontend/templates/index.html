@@ -39,7 +39,8 @@
           <input type="password" id="login-password" class="form-control" placeholder="Enter your password" required>
         </div>
 
-        <div id="login-response" class="alert d-none mb-3"></div>
+        <div id="login-response" class="alert alert-danger d-none mb-3"></div>
+
         <button type="submit" class="btn btn-primary w-100 mb-3">Login</button>
         <p class="text-center">
           Don't have an account?
@@ -52,28 +53,29 @@
         <div class="mb-3">
           <label for="reg-name" class="form-label">Name</label>
           <input type="text" id="reg-name" class="form-control" placeholder="Your full name">
-          <div id="name-error" class="form-text text-danger"></div>
+          <div id="name-error" class="form-text text-danger d-none"></div>
         </div>
 
         <div class="mb-3">
           <label for="reg-email" class="form-label">Email</label>
           <input type="email" id="reg-email" class="form-control" placeholder="Your email address">
-          <div id="email-error" class="form-text text-danger"></div>
+          <div id="email-error" class="form-text text-danger d-none"></div>
         </div>
 
         <div class="mb-3">
           <label for="reg-password" class="form-label">Password</label>
           <input type="password" id="reg-password" class="form-control" placeholder="Enter a password">
-          <div id="password-error" class="form-text text-danger"></div>
+          <div id="password-error" class="form-text text-danger d-none"></div>
         </div>
 
         <div class="mb-3">
           <label for="reg-confirm-password" class="form-label">Confirm Password</label>
           <input type="password" id="reg-confirm-password" class="form-control" placeholder="Repeat your password">
-          <div id="confirm-error" class="form-text text-danger"></div>
+          <div id="confirm-error" class="form-text text-danger d-none"></div>
         </div>
 
         <div id="general-error" class="alert alert-danger d-none mb-3"></div>
+
         <button type="submit" class="btn btn-primary w-100 mb-3">Register</button>
         <p class="text-center">
           Already have an account?

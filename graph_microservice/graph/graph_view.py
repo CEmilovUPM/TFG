@@ -101,10 +101,16 @@ def render_graph(user_id, goal_id):
         graph_json = json.loads(fig.to_json())
         return jsonify(graph_json)
 
+    fig.update_layout(
+        dragmode=False,
+        xaxis=dict(fixedrange=True),
+        yaxis=dict(fixedrange=True)
+    )
+
     config = {
         'staticPlot': False,
         'modeBarButtonsToRemove': ['lasso2d', 'select2d', 'zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'pan2d'],
-        'displayModeBar': True
+        'displayModeBar': False
     }
 
     graph_html = fig.to_html(full_html=False, config=config)

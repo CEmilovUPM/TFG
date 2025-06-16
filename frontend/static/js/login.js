@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function clearMessage() {
     responseDiv.innerText = '';
-    responseDiv.style.color = '';
+    responseDiv.classList.add('d-none');
   }
 
   form.addEventListener('submit', async e => {
@@ -50,7 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         const msg = data.message
           || (data.errors ? Object.values(data.errors).join('\n') : 'Login failed.');
-        responseDiv.style.color = 'red';
+        responseDiv.classList.remove('d-none');
+        responseDiv.classList.add('alert', 'alert-danger');
         responseDiv.innerText = msg;
       }
     } catch (err) {
