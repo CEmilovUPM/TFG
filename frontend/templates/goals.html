@@ -89,7 +89,7 @@
 
       try {
         const userId = {{ user_id }};
-        const res = await fetch(`/api/user/${userId}/goal/${goalId}`, {
+        const res = await fetch(`/api/user/${userId}/goals/${goalId}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',

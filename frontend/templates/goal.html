@@ -144,7 +144,7 @@ document.querySelectorAll('.progress-delete-button').forEach(button => {
 
     try {
       const userId = {{ user_id }};
-      const res = await fetch(`/api/user/${userId}/goal/${goalId}/progress/${progressId}`, {
+      const res = await fetch(`/api/user/${userId}/goals/${goalId}/progress/${progressId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
