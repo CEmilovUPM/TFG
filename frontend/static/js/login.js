@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const password = passInput.value;
 
     if (!email || !password) {
+      responseDiv.classList.remove('d-none');
       responseDiv.style.color = 'red';
       responseDiv.innerText = 'Email and password must not be empty.';
       return;
@@ -56,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (err) {
       console.error('Login error:', err);
+      responseDiv.classList.remove('d-none');
       responseDiv.style.color = 'red';
       responseDiv.innerText = 'An error occurred. Please try again.';
     }

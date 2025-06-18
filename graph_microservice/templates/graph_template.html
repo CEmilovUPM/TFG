@@ -70,7 +70,7 @@ function attachClickHandler() {
 
     const userId = {{ user_id }};
     const goalId = {{ goal_id }};
-    const redirectUrl = `/user/${userId}/goal/${goalId}?date=${clickedDate}`;
+    const redirectUrl = `/user/${userId}/goals/${goalId}?date=${clickedDate}`;
     window.location.href = redirectUrl;
   });
 }

@@ -15,6 +15,18 @@ def get_client():
         _STATIC_INSTANCE = Backend(config.BACKEND_URL)
     return _STATIC_INSTANCE
 
+class Token:
+    def __init__(self, token):
+        self._token = token
+
+    @property
+    def value(self):
+        return self._token
+
+    @value.setter
+    def value(self, value):
+        self._token = value
+
 
 class RequestBuilder:
     def __init__(self):
@@ -22,27 +34,27 @@ class RequestBuilder:
         self._method: str = 'get'
         self._endpoint: str = ''
         self._data: dict | None = None
-        self._accessToken: str | None = None
+        self._accessToken: Token | None = None
+        self._refreshToken: Token | None = None
 
     @property
     def headers(self) -> dict | None:
+        if self._headers is None:
+            self._headers = {}
+        self._headers['Authorization'] = f'Bearer {self._accessToken.value}'
+        self._headers['RefreshToken'] = self._refreshToken.value
         return self._headers
 
     def set_headers(self, headers: dict):
         self._headers = headers
         return self
 
-    def auth(self, token: str):
-        if self._headers is None:
-            self._headers = {}
-        self._headers['Authorization'] = f'Bearer {token}'
+    def auth(self, token: Token):
         self._accessToken = token
         return self
 
-    def refresh(self, token: str):
-        if self._headers is None:
-            self._headers = {}
-        self._headers['RefreshToken'] = token
+    def refresh(self, token: Token):
+        self._refreshToken = token
         return self
 
     @property
@@ -94,10 +106,9 @@ class Backend:
                                             data={"refreshToken":f"{request.headers.get('RefreshToken')}"})
             try:
                 body = json.loads(bytes(new_auth.data).decode('utf-8'))
-                request.auth(body["info"]["accessToken"])
+                request.access_token.value = body["info"]["accessToken"]
                 response = self.request(request.method, request.endpoint, data=request.data, headers=request.headers)
             except Exception as e:
                 return response
         return response
-
 

@@ -3,6 +3,7 @@ import os
 from flask import Flask
 
 from app.views.protected_view import trim_float
+from app.views.utils import render_date
 
 
 def create_app():
@@ -19,5 +20,6 @@ def create_app():
     app.register_blueprint(partial_blueprint)
 
     app.jinja_env.filters["trim_float"] = trim_float
+    app.jinja_env.filters["render_date"] = render_date
 
     return app
