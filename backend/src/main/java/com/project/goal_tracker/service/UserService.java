@@ -308,29 +308,27 @@ public class UserService {
     }
 
 
-    public ResponseEntity<?> manageRole(String admin, String targetUser, boolean makeAdmin) {
+    public ResponseEntity<?> manageRole(String admin, Long userId, boolean makeAdmin) {
         AggregateOutput<String> out = new AggregateOutput<>();
 
+        User targetUser = this.getUser(userId, out);
+        if(targetUser == null){
+            return out.toResponseEntity();
+        }
+
         //default admin
-        if(Objects.equals(targetUser, "admin@goal.tracker")){
+        if(Objects.equals(targetUser.getEmail(), "admin@goal.tracker")){
             out.error("default_admin_protected", "This user cannot be modified.");
             return out.setStatus(HttpStatus.NOT_FOUND).toResponseEntity();
         }
 
-        if(Objects.equals(admin, targetUser)){
+        if(Objects.equals(admin, targetUser.getEmail())){
             out.warning("operation_not_allowed","You cannot demote/promote yourself");
             return out.setStatus(HttpStatus.BAD_REQUEST).toResponseEntity();
         }
 
-         User user = this.userRepository.findByEmail(targetUser);
-
-         if(user == null){
-             out.error("user_does_not_exist","The user does not exist");
-             return out.setStatus(HttpStatus.NOT_FOUND).toResponseEntity();
-         }
-
-        user.setAdmin(makeAdmin);
-        this.userRepository.save(user);
+        targetUser.setAdmin(makeAdmin);
+        this.userRepository.save(targetUser);
          if(makeAdmin){
              out.info("promoted_admin", "User successfully promoted to admin");
          }else{
@@ -339,30 +337,28 @@ public class UserService {
         return out.setStatus(HttpStatus.OK).toResponseEntity();
     }
 
-    public ResponseEntity<?> manageAccountStatus(String admin, String targetUser, boolean ban) {
+    public ResponseEntity<?> manageAccountStatus(String admin, Long userId, boolean ban) {
         AggregateOutput<String> out = new AggregateOutput<>();
 
+        User targetUser = this.getUser(userId, out);
+        if(targetUser == null){
+            return out.toResponseEntity();
+        }
+
         //default admin
-        if(Objects.equals(targetUser, "admin@goal.tracker")){
+        if(Objects.equals(targetUser.getEmail(), "admin@goal.tracker")){
             out.error("default_admin_protected", "This user cannot be modified.");
             return out.setStatus(HttpStatus.NOT_FOUND).toResponseEntity();
         }
 
-        if(Objects.equals(admin, targetUser)){
+        if(Objects.equals(admin, targetUser.getEmail())){
             out.warning("operation_not_allowed","You cannot ban/unban yourself");
             return out.setStatus(HttpStatus.BAD_REQUEST).toResponseEntity();
         }
         System.out.println(targetUser);
-        User user = this.userRepository.findByEmail(targetUser);
 
-
-        if (user == null) {
-            out.error("user_does_not_exist", "The user does not exist.");
-            return out.setStatus(HttpStatus.NOT_FOUND).toResponseEntity();
-        }
-
-        user.setBanned(ban);
-        this.userRepository.save(user);
+        targetUser.setBanned(ban);
+        this.userRepository.save(targetUser);
         if(ban){
             out.info("user_banned", "User successfully banned");
         }else{

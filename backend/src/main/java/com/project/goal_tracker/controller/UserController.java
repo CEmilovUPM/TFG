@@ -45,42 +45,42 @@ public class UserController {
 
     //Takes in the email of the targetUser
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/promote")
+    @PostMapping("/{userId}/promote")
     public ResponseEntity<?> promote(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                     @RequestBody PromoteRequest request){
+                                     @PathVariable Long userId){
         return service.manageRole(
                 userDetails.getUsername(),
-                request.getTargetUser(),
+                userId,
                 true);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/demote")
+    @PostMapping("/{userId}/demote")
     public ResponseEntity<?> demote(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                     @RequestBody PromoteRequest request){
+                                    @PathVariable Long userId){
         return service.manageRole(
                 userDetails.getUsername(),
-                request.getTargetUser(),
+                userId,
                 false);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/ban")
+    @PostMapping("/{userId}/ban")
     public ResponseEntity<?> banUser(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                     @RequestBody BanUserRequest request) {
+                                     @PathVariable Long userId) {
         return service.manageAccountStatus(
                 userDetails.getUsername(),
-                request.getTargetUser(),
+                userId,
                 true);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/unban")
+    @PostMapping("/{userId}/unban")
     public ResponseEntity<?> unbanUser(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                       @RequestBody BanUserRequest request) {
+                                       @PathVariable Long userId) {
         return service.manageAccountStatus(
                 userDetails.getUsername(),
-                request.getTargetUser(),
+                userId,
                 false);
     }
 

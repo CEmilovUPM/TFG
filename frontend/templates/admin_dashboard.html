@@ -61,7 +61,7 @@
         if (!confirm(confirmMsg)) return;
 
         try {
-          const res = await fetch(`/api/admin/user/${userId}/${action}`, {
+          const res = await fetch(`/api/user/${userId}/${action}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
