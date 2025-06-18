@@ -82,14 +82,35 @@ public class GoalService {
         if(goal == null){
             return;
         }
-        if(!validGoalObject(request.getTitle(),request.getMetric(), request.getTotalDesiredAmount(), out)){
-            return;
+        boolean isValid = true;
+        if (request.getTotalDesiredAmount() != null) {
+            if(request.getTotalDesiredAmount()<= 0.0){
+                out.error("amount_must_be_positive", "The amount must be positive", HttpStatus.BAD_REQUEST);
+                isValid = false;
+            }else{
+                goal.setTotalDesiredAmount(request.getTotalDesiredAmount());
+            }
         }
+        if (request.getTitle() != null){
+            if(request.getTitle().isBlank()){
+                out.error("title_is_blank", "The title cannot be blank", HttpStatus.BAD_REQUEST);
+                isValid = false;
+            }else{
+                goal.setTitle(request.getTitle());
+            }
+        }
+        if (request.getMetric() != null){
+            if(request.getMetric().isBlank()){
+                out.error("metric_is_blank", "The metric cannot be blank", HttpStatus.BAD_REQUEST);
+                isValid = false;
+            }else{
+                goal.setMetric(request.getMetric());
+            }
+        }
+        if (!isValid) return;
 
-        if (request.getTitle() != null) goal.setTitle(request.getTitle());
-        if (request.getMetric() != null) goal.setMetric(request.getMetric());
+
         if (request.getDescription() != null) goal.setDescription(request.getDescription());
-        if (request.getTotalDesiredAmount() != null) goal.setTotalDesiredAmount(request.getTotalDesiredAmount());
         goal.setCompleted(request.isCompleted());
         goalRepository.save(goal);
 

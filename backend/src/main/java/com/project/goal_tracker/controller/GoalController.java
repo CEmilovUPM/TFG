@@ -94,7 +94,6 @@ public class GoalController {
         if (!userService.validAction(user, userId, out)){
             return out.toResponseEntity();
         }
-
         goalService.updateGoal(userId, id, request, out);
 
         return out.toResponseEntity();

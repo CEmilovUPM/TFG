@@ -65,8 +65,8 @@
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
-            }
+            },
+            credentials: 'include'
           });
 
           const data = await res.json();
@@ -79,8 +79,7 @@
             window.location.reload();
           } else {
             const msg =
-              data?.error?.[0]?.message ||
-              data?.warning?.[0]?.message ||
+               Object.values(data?.errors || {})[0] ||
               "Action failed. Please try again.";
             alert(msg);
           }
