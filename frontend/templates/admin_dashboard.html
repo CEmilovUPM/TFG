@@ -31,12 +31,12 @@
                 View Goals
               </a>
               <button class="btn btn-sm btn-danger ban-toggle action-button" 
-                      data-user-id="{{ user.email }}" 
+                      data-user-id="{{ user.id }}"
                       data-action="{{ 'unban' if user.banned else 'ban' }}">
                 {{ 'Unban' if user.banned else 'Ban' }}
               </button>
               <button class="btn btn-sm btn-warning promote-toggle action-button" 
-                      data-user-id="{{ user.email }}" 
+                      data-user-id="{{ user.id }}"
                       data-action="{{ 'demote' if user.admin else 'promote' }}">
                 {{ 'Demote' if user.admin else 'Promote' }}
               </button>
