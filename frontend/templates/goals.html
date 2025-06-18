@@ -93,8 +93,8 @@
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
-          }
+          },
+          credentials: 'include'
         });
 
         if (res.status === 204) {

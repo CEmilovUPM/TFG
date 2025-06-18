@@ -113,12 +113,12 @@
 
     const userId = {{ user_id }};
     try {
-      const res = await fetch(`/api/user/${userId}/goal/${goalId}`, {
+      const res = await fetch(`/api/user/${userId}/goals/${goalId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
-        }
+        },
+        credentials: 'include'
       });
 
       if (res.status === 204) {
@@ -148,8 +148,8 @@ document.querySelectorAll('.progress-delete-button').forEach(button => {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
-        }
+        },
+        credentials: 'include'
       });
 
       if (res.status === 204) {
@@ -179,8 +179,8 @@ document.querySelectorAll('.progress-delete-button').forEach(button => {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
         },
+        credentials: 'include',
         body: JSON.stringify({ completed: !currentlyCompleted })
       });
 
