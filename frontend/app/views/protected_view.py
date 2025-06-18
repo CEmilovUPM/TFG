@@ -173,6 +173,11 @@ def single_goal(user_id, goal_id):
 
 @protected.route("/user/<int:user_id>/goals/create-form", methods=["GET", "POST"])
 def create_goal_form(user_id):
+    user_data, status = profile()
+    if status in [401, 403]:
+        return redirect('/')
+    user_data = user_data["data"][0]
+
     if request.method == "POST":
         token = Token(request.cookies.get('JWT'))
         refresh = Token(request.cookies.get('RefreshToken'))
@@ -205,12 +210,14 @@ def create_goal_form(user_id):
 
         resp = render_template("goal_create_form.html",
                                user_id=user_id,
-                               **errors)
+                               **errors,
+                               **user_data)
 
         return create_response(resp,token)
 
     return render_template("goal_create_form.html",
-                           user_id=user_id)
+                           user_id=user_id,
+                           **user_data)
 
 
 @protected.route("/user/<int:user_id>/goals/<int:goal_id>/update-form", methods=["GET"])
@@ -219,6 +226,11 @@ def update_goal_form(user_id, goal_id):
     refresh = Token(request.cookies.get('RefreshToken'))
     if not refresh or not refresh.value:
         return redirect('/')
+
+    user_data, status = profile()
+    if status in [401, 403]:
+        return redirect('/')
+    user_data = user_data["data"][0]
 
     client = get_client()
     backend_request = ((((RequestBuilder()
@@ -235,7 +247,8 @@ def update_goal_form(user_id, goal_id):
 
     resp = render_template("goal_update_form.html",
                            goal=goal,
-                           user_id=user_id)
+                           user_id=user_id,
+                           **user_data)
     return create_response(resp, token)
 
 
@@ -245,6 +258,11 @@ def update_goal(user_id, goal_id):
     refresh = Token(request.cookies.get('RefreshToken'))
     if not refresh or not refresh.value:
         return redirect('/')
+
+    user_data, status = profile()
+    if status in [401, 403]:
+        return redirect('/')
+    user_data = user_data["data"][0]
 
     form_data = {
         "title": request.form.get("title"),
@@ -272,6 +290,7 @@ def update_goal(user_id, goal_id):
     resp = render_template("goal_update_form.html",
                                             goal=form_data,
                                             **errors,
+                                            **user_data,
                                             user_id=user_id)
 
     return create_response(resp, token)
@@ -283,6 +302,11 @@ def create_progress(user_id, goal_id):
     if not refresh or not refresh.value:
         return redirect('/')
     client = get_client()
+
+    user_data, status = profile()
+    if status in [401, 403]:
+        return redirect('/')
+    user_data = user_data["data"][0]
 
     backend_request = ((((RequestBuilder()
                           .auth(token))
@@ -320,13 +344,15 @@ def create_progress(user_id, goal_id):
                                    goal_id=goal_id,
                                    goal_title=goal_title,
                                    user_id=user_id,
-                                   **body["errors"])
+                                   **body["errors"],
+                                   **user_data)
             return create_response(resp, token)
 
     resp = render_template("progress_create_form.html",
                            goal_id=goal_id,
                            user_id=user_id,
-                           goal_title=goal_title)
+                           goal_title=goal_title,
+                           **user_data)
     return create_response(resp, token)
 
 @protected.route("/api/user/<int:user_id>/goal/<int:goal_id>/progress/<int:progress_id>", methods=["DELETE"])
@@ -361,6 +387,11 @@ def update_progress_form(user_id, goal_id, progress_id):
     if not refresh or not refresh.value:
         return redirect('/')
 
+    user_data, status = profile()
+    if status in [401, 403]:
+        return redirect('/')
+    user_data = user_data["data"][0]
+
     client = get_client()
     backend_request = (
         RequestBuilder()
@@ -380,7 +411,8 @@ def update_progress_form(user_id, goal_id, progress_id):
     resp = render_template("progress_update_form.html",
                            progress=progress,
                            goal_id=goal_id,
-                           user_id=user_id)
+                           user_id=user_id,
+                           **user_data)
 
     return create_response(resp, token)
 
@@ -391,6 +423,11 @@ def update_progress(user_id, goal_id, progress_id):
     refresh = Token(request.cookies.get('RefreshToken'))
     if not refresh or not refresh.value:
         return redirect('/')
+
+    user_data, status = profile()
+    if status in [401, 403]:
+        return redirect('/')
+    user_data = user_data["data"][0]
 
     form_data = {
         "updateNote": request.form.get("updateNote"),
@@ -430,7 +467,8 @@ def update_progress(user_id, goal_id, progress_id):
                            progress=progress,
                            goal_id=goal_id,
                            user_id=user_id,
-                           **body["errors"])
+                           **body["errors"],
+                           **user_data)
 
     return create_response(resp, token)
 

@@ -38,6 +38,7 @@ public class GoalService {
         goal.setTotalDesiredAmount(request.getTotalDesiredAmount());
         goal.setCreationDate(LocalDate.now());
         goalRepository.save(goal);
+        out.info("message","Successfully created the goal",HttpStatus.CREATED);
     }
 
     public Goal lookupGoal(Long userId, Long id, AggregateOutput<?> out){

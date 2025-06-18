@@ -45,10 +45,12 @@ public class GoalController {
             if (!userService.validAction(user, userId, out)){
                 return out.setStatus(HttpStatus.BAD_REQUEST).toResponseEntity();
             }
-            User targetUser = userService.getUser(userId,out);
+            User targetUser = userService.getUser(userId, out);
+            if (targetUser == null){
+                return out.toResponseEntity();
+            }
             goalService.createGoal(targetUser,request, out);
-            out.info("message","Successfully created the goal");
-            return out.setStatus(HttpStatus.CREATED).toResponseEntity();
+            return out.toResponseEntity();
         }
     }
     @Transactional

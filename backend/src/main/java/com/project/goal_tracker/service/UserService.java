@@ -384,19 +384,21 @@ public class UserService {
 
     public User getUser(Long userId, AggregateOutput<?> out) {
         Optional<User> opt = userRepository.findById(userId);
-        out.error("user_not_found", "User not found", HttpStatus.NOT_FOUND);
-        if (opt.isEmpty()) return null;
+        if (opt.isEmpty()) {
+            out.error("user_not_found", "User not found", HttpStatus.NOT_FOUND);
+            return null;
+        }
         return opt.get();
     }
 
     public boolean validAction(User user, Long userId, AggregateOutput<?> out) {
         if (user == null){
-            out.error("user_not_found","User could not be found", HttpStatus.NOT_FOUND);
+            out.error("issuer_not_found","User issuing this action could not be found", HttpStatus.NOT_FOUND);
             return false;
         }
         Optional<User> targetUser = this.userRepository.findById(userId);
         if(targetUser.isEmpty()){
-            out.error("user_not_found","User could not be found", HttpStatus.NOT_FOUND);
+            out.error("target_user_not_found","Target user could not be found", HttpStatus.NOT_FOUND);
             return false;
         }
         if (user.isAdmin()){
