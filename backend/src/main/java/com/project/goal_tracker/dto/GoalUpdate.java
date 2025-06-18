@@ -9,6 +9,16 @@ public class GoalUpdate {
     private Double totalDesiredAmount;
     private LocalDate creationDate;
 
+    private boolean isCompleted = false;
+
+    public boolean isCompleted() {
+        return isCompleted;
+    }
+
+    public void setCompleted(boolean completed) {
+        isCompleted = completed;
+    }
+
     public String getTitle() {
         return title;
     }

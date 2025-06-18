@@ -1,0 +1,45 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: testing-ingress
+  namespace: testing
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  tls:
+    - hosts:
+        - goal-tracker.test
+      secretName: goal-tracker-tls-secret
+  rules:
+    - host: goal-tracker.test
+      http:
+        paths:
+          - path: /user/.*/goals/.*/graph
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: graph-service
+                port:
+                  number: 80
+          - path: /user/.*/goal/.*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: flask-frontend
+                port:
+                  number: 80
+          - path: /api/
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: flask-frontend
+                port:
+                  number: 80

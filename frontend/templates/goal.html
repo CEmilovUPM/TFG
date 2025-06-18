@@ -20,7 +20,14 @@
 
   <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">{{ goal.title }}</h5>
+      <div class="d-flex align-items-center">
+        <h5 class="mb-0 me-2">{{ goal.title }}</h5>
+        {% if goal.completed %}
+          <span class="badge bg-success text-light fw-bold px-2 py-1" style="font-size: 0.85rem;">
+            ✅ Completed
+          </span>
+        {% endif %}
+      </div>
       <div>
         <a href="/user/{{ user_id }}/goals/{{ goal.id }}/graph" class="btn btn-sm btn-outline-info me-1">
           📊 Graph
@@ -29,6 +36,15 @@
            class="btn btn-sm btn-outline-primary me-1">
           ✏️ Update
         </a>
+        <button id="toggle-complete-button"
+          class="btn btn-sm btn-outline-success me-1"
+          data-completed="{{ 'true' if goal.completed else 'false' }}">
+            {% if goal.completed %}
+              ❌ Mark as Incomplete
+            {% else %}
+              ✅ Mark as Complete
+            {% endif %}
+        </button>
         <button class="btn btn-sm btn-outline-danger delete-button"
                 data-goal-id="{{ goal.id }}"
                 title="Delete Goal">
@@ -149,4 +165,37 @@ document.querySelectorAll('.progress-delete-button').forEach(button => {
   });
 });
 </script>
+<script>
+  document.getElementById('toggle-complete-button').addEventListener('click', async function (e) {
+    e.preventDefault();
+
+    const button = this;
+    const userId = {{ user_id }};
+    const goalId = {{ goal.id }};
+    const currentlyCompleted = button.getAttribute('data-completed') === 'true';
+
+    try {
+      const res = await fetch(`/api/user/${userId}/goals/${goalId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
+        },
+        body: JSON.stringify({ completed: !currentlyCompleted })
+      });
+
+      if (res.ok) {
+        // Reload to reflect the updated status
+        window.location.reload();
+      } else {
+        const data = await res.json();
+        alert(data.message || "Failed to update completion status.");
+      }
+    } catch (err) {
+      console.error("Completion toggle failed:", err);
+      alert("Error occurred while updating goal status.");
+    }
+  });
+</script>
+
 {% endblock %}

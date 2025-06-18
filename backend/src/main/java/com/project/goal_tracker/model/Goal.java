@@ -35,6 +35,15 @@ public class Goal {
     private LocalDate creationDate;
 
 
+    private boolean isCompleted = false;
+    public boolean isCompleted() {
+        return isCompleted;
+    }
+
+    public void setCompleted(boolean completed) {
+        isCompleted = completed;
+    }
+
     public Long getId() {
         return id;
     }

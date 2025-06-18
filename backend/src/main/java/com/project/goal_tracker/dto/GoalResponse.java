@@ -14,14 +14,31 @@ public class GoalResponse {
     private Double totalDesiredAmount;
     private LocalDate creationDate;
 
+    private boolean isCompleted;
 
-    public GoalResponse(Long id, String title, String description, String metric, Double totalDesiredAmount, LocalDate creationDate) {
+
+    public GoalResponse(Long id,
+                        String title,
+                        String description,
+                        String metric,
+                        Double totalDesiredAmount,
+                        LocalDate creationDate,
+                        boolean isCompleted) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.metric = metric;
         this.totalDesiredAmount = totalDesiredAmount;
         this.creationDate = creationDate;
+        this.isCompleted = isCompleted;
+    }
+
+    public boolean isCompleted() {
+        return isCompleted;
+    }
+
+    public void setCompleted(boolean completed) {
+        isCompleted = completed;
     }
 
     public Long getId() {
@@ -80,7 +97,8 @@ public class GoalResponse {
                 goal.getDescription(),
                 goal.getMetric(),
                 goal.getTotalDesiredAmount(),
-                goal.getCreationDate()
+                goal.getCreationDate(),
+                goal.isCompleted()
         );
     }
 }

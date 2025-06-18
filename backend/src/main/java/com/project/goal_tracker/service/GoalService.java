@@ -82,6 +82,7 @@ public class GoalService {
         if (request.getMetric() != null) goal.setMetric(request.getMetric());
         if (request.getDescription() != null) goal.setDescription(request.getDescription());
         if (request.getTotalDesiredAmount() != null) goal.setTotalDesiredAmount(request.getTotalDesiredAmount());
+        goal.setCompleted(request.isCompleted());
         goalRepository.save(goal);
 
         out.info("message","Successfully updated the goal",HttpStatus.OK);
