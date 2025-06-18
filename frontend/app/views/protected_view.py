@@ -248,7 +248,8 @@ def update_goal_form(user_id, goal_id):
     resp = render_template("goal_update_form.html",
                            goal=goal,
                            user_id=user_id,
-                           **user_data)
+                           **user_data,
+                           goal_id=goal_id)
     return create_response(resp, token)
 
 
@@ -291,7 +292,8 @@ def update_goal(user_id, goal_id):
                                             goal=form_data,
                                             **errors,
                                             **user_data,
-                                            user_id=user_id)
+                                            user_id=user_id,
+                                            goal_id=goal_id)
 
     return create_response(resp, token)
 
