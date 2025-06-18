@@ -26,7 +26,10 @@ public class GoalService {
     private GoalRepository goalRepository;
 
 
-    public void createGoal(User user, GoalCreate request){
+    public void createGoal(User user, GoalCreate request, AggregateOutput<?> out){
+        if(!validGoalObject(request.getTitle(),request.getMetric(), request.getTotalDesiredAmount(), out)){
+            return;
+        }
         Goal goal = new Goal();
         goal.setUser(user);
         goal.setTitle(request.getTitle());
@@ -78,6 +81,10 @@ public class GoalService {
         if(goal == null){
             return;
         }
+        if(!validGoalObject(request.getTitle(),request.getMetric(), request.getTotalDesiredAmount(), out)){
+            return;
+        }
+
         if (request.getTitle() != null) goal.setTitle(request.getTitle());
         if (request.getMetric() != null) goal.setMetric(request.getMetric());
         if (request.getDescription() != null) goal.setDescription(request.getDescription());
@@ -96,5 +103,24 @@ public class GoalService {
         }
         goalRepository.delete(goal);
         out.info("message","Successfully deleted the goal", HttpStatus.NO_CONTENT);
+    }
+
+    public boolean validGoalObject(String title, String metric, double totalDesiredAmount, AggregateOutput<?> out){
+        boolean isValid = true;
+        if(totalDesiredAmount <= 0.0){
+            out.error("amount_must_be_positive", "The amount must be positive", HttpStatus.BAD_REQUEST);
+            isValid = false;
+        }
+        if(title.isBlank()){
+            out.error("title_is_blank", "The title cannot be blank", HttpStatus.BAD_REQUEST);
+            isValid = false;
+        }
+        if(metric.isBlank()){
+            out.error("metric_is_blank", "The metric cannot be blank", HttpStatus.BAD_REQUEST);
+            isValid = false;
+        }
+
+        return isValid;
+
     }
 }

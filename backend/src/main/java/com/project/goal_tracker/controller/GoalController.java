@@ -46,7 +46,7 @@ public class GoalController {
                 return out.setStatus(HttpStatus.BAD_REQUEST).toResponseEntity();
             }
             User targetUser = userService.getUser(userId,out);
-            goalService.createGoal(targetUser,request);
+            goalService.createGoal(targetUser,request, out);
             out.info("message","Successfully created the goal");
             return out.setStatus(HttpStatus.CREATED).toResponseEntity();
         }

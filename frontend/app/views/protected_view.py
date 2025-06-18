@@ -201,9 +201,11 @@ def create_goal_form(user_id):
         if response.status == 201:
             return redirect(f'/user/{user_id}/goals')
 
+        errors = json.loads(response.data)["errors"]
+
         resp = render_template("goal_create_form.html",
-                               error="Failed to create goal.",
-                               user_id=user_id)
+                               user_id=user_id,
+                               **errors)
 
         return create_response(resp,token)
 
@@ -265,9 +267,11 @@ def update_goal(user_id, goal_id):
     elif response.status in [401, 403]:
         return redirect('/')
 
+    errors = json.loads(response.data)["errors"]
+
     resp = render_template("goal_update_form.html",
                                             goal=form_data,
-                                            error="Failed to update goal",
+                                            **errors,
                                             user_id=user_id)
 
     return create_response(resp, token)

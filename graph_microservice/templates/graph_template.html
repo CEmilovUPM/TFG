@@ -42,7 +42,13 @@
     {{ graph_html|safe }}
   </div>
 </div>
-
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const monthSelect = document.getElementById('monthSelect');
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0'); // "01" to "12"
+    monthSelect.value = currentMonth;
+  });
+</script>
 <script>
   // Populate year dropdown
   const yearSelect = document.getElementById('yearSelect');
