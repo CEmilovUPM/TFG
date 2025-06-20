@@ -9,6 +9,6 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-COPY backend/target/goal-tracker.jar goal-tracker.jar
+COPY backend/target/goal-tracker-0.0.1-SNAPSHOT.jar goal-tracker.jar
 
 CMD ["java", "-jar", "goal-tracker.jar"]
