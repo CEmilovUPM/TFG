@@ -9,7 +9,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
-    - host: goal-tracker.test
+    - host: goal-tracker
       http:
         paths:
           - path: /api(/|$)(.*)
@@ -33,10 +33,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - goal-tracker.test
+        - goal-tracker
       secretName: goal-tracker-tls-secret
   rules:
-    - host: goal-tracker.test
+    - host: goal-tracker
       http:
         paths:
           - path: /user/.*/goals/.*/graph
