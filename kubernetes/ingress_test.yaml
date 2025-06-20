@@ -53,6 +53,20 @@ spec:
                 name: flask-frontend
                 port:
                   number: 80
+          - path: /user/.*/csv-report
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: export-service
+                port:
+                  number: 80
+          - path: /user/.*/pdf-report
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: export-service
+                port:
+                  number: 80
           - path: /
             pathType: Prefix
             backend:
