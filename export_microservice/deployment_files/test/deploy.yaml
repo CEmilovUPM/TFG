@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: export-microservice
+  namespace: testing
+  labels:
+    app: export-microservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: export-microservice
+  template:
+    metadata:
+      labels:
+        app: export-microservice
+    spec:
+      containers:
+        - name: export-microservice
+          image: export-microservice:latest  
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+          env:
+            - name: FLASK_RUN_HOST
+              value: 0.0.0.0
+            - name: BACKEND_URL
+              value: http://backend-service.testing.svc.cluster.local:8000/
+            - name: PYTHONPATH
+              value: /app/export_microservice 
+          volumeMounts:
+            - name: project-source
+              mountPath: /app
+      volumes:
+        - name: project-source
+          hostPath:
+            path: /mnt/app
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: export-service
+  namespace: testing
+spec:
+  type: NodePort
+  selector:
+    app: export-microservice
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+      nodePort: 30110
