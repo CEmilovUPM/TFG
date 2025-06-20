@@ -1,0 +1,76 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+  namespace: prod
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - host: goal-tracker.test
+      http:
+        paths:
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 8000
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-ingress
+  namespace: prod
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  tls:
+    - hosts:
+        - goal-tracker.test
+      secretName: goal-tracker-tls-secret
+  rules:
+    - host: goal-tracker.test
+      http:
+        paths:
+          - path: /user/.*/goals/.*/graph
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: graph-service
+                port:
+                  number: 80
+          - path: /user/.*/goal/.*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: flask-frontend
+                port:
+                  number: 80
+          - path: /user/.*/csv-report
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: export-service
+                port:
+                  number: 80
+          - path: /user/.*/pdf-report
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: export-service
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: flask-frontend
+                port:
+                  number: 80
