@@ -7,115 +7,50 @@
   </a>
 
   <div class="card shadow-sm mb-4">
-  <div class="card-body">
-    <form class="row g-2 align-items-end">
-      <div class="col-auto">
-        <label for="yearSelect" class="form-label mb-0">Pick month:</label>
-      </div>
-      <div class="col-auto">
-        <select id="yearSelect" name="year" class="form-select"></select>
-      </div>
-      <div class="col-auto">
-        <select id="monthSelect" name="month" class="form-select">
-          <option value="01">January</option>
-          <option value="02">February</option>
-          <option value="03">March</option>
-          <option value="04">April</option>
-          <option value="05">May</option>
-          <option value="06">June</option>
-          <option value="07">July</option>
-          <option value="08">August</option>
-          <option value="09">September</option>
-          <option value="10">October</option>
-          <option value="11">November</option>
-          <option value="12">December</option>
-        </select>
-      </div>
-      <div class="col-auto">
-        <button id="applyMonthBtn" type="button" class="btn btn-primary">Search</button>
-      </div>
-    </form>
+    <div class="card-body">
+      <form class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label for="yearSelect" class="form-label mb-0">Pick month:</label>
+        </div>
+        <div class="col-auto">
+          <select id="yearSelect" name="year" class="form-select"></select>
+        </div>
+        <div class="col-auto">
+          <select id="monthSelect" name="month" class="form-select">
+            <option value="01">January</option>
+            <option value="02">February</option>
+            <option value="03">March</option>
+            <option value="04">April</option>
+            <option value="05">May</option>
+            <option value="06">June</option>
+            <option value="07">July</option>
+            <option value="08">August</option>
+            <option value="09">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <button id="applyMonthBtn" type="button" class="btn btn-primary">Search</button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
 
   <div id="graph-container">
     {{ graph_html|safe }}
   </div>
 </div>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const monthSelect = document.getElementById('monthSelect');
-    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0'); // "01" to "12"
-    monthSelect.value = currentMonth;
-  });
-</script>
-<script>
-  // Populate year dropdown
-  const yearSelect = document.getElementById('yearSelect');
-  const currentYear = new Date().getFullYear();
 
-  for (let y = currentYear - 5; y <= currentYear + 5; y++) {
-    const option = document.createElement('option');
-    option.value = y;
-    option.textContent = y;
-    if (y === currentYear) option.selected = true;
-    yearSelect.appendChild(option);
-  }
-</script>
-
+<!-- Load Plotly library -->
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<script src="{{ url_for('static', filename='js/progress.js') }}"></script>
+
 <script>
-const graphDiv = document.getElementById('graph-container');
-
-function attachClickHandler() {
-  graphDiv.on('plotly_click', function(eventData) {
-    if (!eventData?.points?.length) return;
-
-    const point = eventData.points[0];
-    const clickedDate = point.x;
-
-    const userId = {{ user_id }};
-    const goalId = {{ goal_id }};
-    const redirectUrl = `/user/${userId}/goals/${goalId}?date=${clickedDate}`;
-    window.location.href = redirectUrl;
-  });
-}
-
-function updateGraph() {
-  const year = document.getElementById('yearSelect').value;
-  const month = document.getElementById('monthSelect').value;
-  const selectedMonth = `${year}-${month}`;
-
-  const url = new URL(window.location.href);
-  url.searchParams.set('month', selectedMonth);
-  url.searchParams.set('partial', 'true');
-
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      const config = {
-        staticPlot: false,
-        modeBarButtonsToRemove: ['lasso2d', 'select2d', 'zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'pan2d'],
-        displayModeBar: false
-      };
-
-      data.layout = data.layout || {};
-      data.layout.dragmode = false;
-      data.layout.xaxis = data.layout.xaxis || {};
-      data.layout.yaxis = data.layout.yaxis || {};
-      data.layout.xaxis.fixedrange = true;
-      data.layout.yaxis.fixedrange = true;
-
-      Plotly.react(graphDiv, data.data, data.layout, config);
-      attachClickHandler();
-    })
-    .catch(error => {
-      console.error('Error fetching updated graph:', error);
-    });
-}
-
-document.getElementById('applyMonthBtn').addEventListener('click', updateGraph);
-
-attachClickHandler();
+  // Pass user_id and goal_id as global variables for JS usage
+  window.userId = {{ user_id }};
+  window.goalId = {{ goal_id }};
 </script>
 {% endblock %}
