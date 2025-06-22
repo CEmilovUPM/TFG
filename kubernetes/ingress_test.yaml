@@ -46,6 +46,13 @@ spec:
                 name: graph-service
                 port:
                   number: 80
+          - path: /graph-static(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: graph-service
+                port:
+                  number: 80
           - path: /user/.*/goal/.*
             pathType: ImplementationSpecific
             backend:
