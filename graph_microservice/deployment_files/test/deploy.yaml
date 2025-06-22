@@ -28,6 +28,8 @@ spec:
               value: http://backend-service.testing.svc.cluster.local:8000/
             - name: PYTHONPATH
               value: /app/graph_microservice 
+            - name: STATIC_URL
+              value: /graph-static
           volumeMounts:
             - name: project-source
               mountPath: /app

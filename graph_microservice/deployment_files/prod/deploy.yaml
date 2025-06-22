@@ -26,6 +26,8 @@ spec:
               value: 0.0.0.0
             - name: BACKEND_URL
               value: http://backend-service.prod.svc.cluster.local:8000/
+            - name: STATIC_URL
+              value: /graph-static
 ---
 apiVersion: v1
 kind: Service

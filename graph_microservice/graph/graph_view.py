@@ -8,6 +8,7 @@ from flask import Blueprint, request, redirect, render_template, jsonify
 import plotly.graph_objs as go
 
 from graph.backend_client import get_client, RequestBuilder, Token
+from graph.config import STATIC_URL
 
 protected = Blueprint("protected", __name__)
 
@@ -119,7 +120,8 @@ def render_graph(user_id, goal_id):
         graph_html=graph_html,
         **user_data,
         user_id=user_id,
-        goal_id=goal_id
+        goal_id=goal_id,
+        STATIC_URL=STATIC_URL
     )
 
 
