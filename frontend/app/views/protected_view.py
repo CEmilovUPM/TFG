@@ -85,7 +85,7 @@ def goals_list(user_id):
     return create_response(resp, token)
 
 
-@protected.route("/api/user/<int:user_id>/goal/<int:goal_id>", methods=["DELETE"])
+@protected.route("/api/user/<int:user_id>/goals/<int:goal_id>", methods=["DELETE"])
 def goal_delete(user_id, goal_id):
     token = Token(request.cookies.get('JWT'))
     refresh = Token(request.cookies.get('RefreshToken'))
@@ -357,7 +357,7 @@ def create_progress(user_id, goal_id):
                            **user_data)
     return create_response(resp, token)
 
-@protected.route("/api/user/<int:user_id>/goal/<int:goal_id>/progress/<int:progress_id>", methods=["DELETE"])
+@protected.route("/api/user/<int:user_id>/goals/<int:goal_id>/progress/<int:progress_id>", methods=["DELETE"])
 def delete_progress(user_id, goal_id, progress_id):
     token = Token(request.cookies.get('JWT'))
     refresh = Token(request.cookies.get('RefreshToken'))
@@ -550,13 +550,6 @@ def admin_action(user_email, action):
 
     return json.loads(response.data), response.status
 
-
-def trim_float(value):
-    try:
-        f = float(value)
-        return int(f) if f.is_integer() else round(f,2)
-    except (ValueError, TypeError):
-        return value
 
 def create_response(content, access_token: Token):
     out = make_response(content)

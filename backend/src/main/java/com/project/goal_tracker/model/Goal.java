@@ -28,7 +28,7 @@ public class Goal {
     @OneToMany(mappedBy = "goal", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Progress> progressList;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
     private Double totalDesiredAmount;
 
     @Column(nullable = false)

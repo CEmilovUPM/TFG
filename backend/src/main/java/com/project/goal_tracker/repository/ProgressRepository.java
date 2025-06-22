@@ -8,5 +8,4 @@ import java.util.List;
 public interface ProgressRepository extends JpaRepository<Progress, Long> {
 
     List<Progress> findByGoalId(Long id);
-
 }

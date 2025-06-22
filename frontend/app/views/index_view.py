@@ -24,25 +24,3 @@ def login_form():
 
 
     return render_template("index.html")
-
-
-
-
-#deprecated
-def home():
-    token = request.cookies.get('JWT')
-    if not token:
-        return redirect('/')
-
-    client = get_client()
-
-    headers = {'Authorization': f'Bearer {token}'}
-    resp = client.request("get","user/profile",headers=headers)
-
-    if resp.status == 401 or resp.status == 403:
-
-
-        return redirect('/')
-
-
-    return render_template("base.html")

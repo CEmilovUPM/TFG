@@ -62,7 +62,8 @@ public class UserService {
 
         try {
             Authentication authentication =
-                    authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+                    authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(),
+                            request.getPassword()));
 
             if(authentication.isAuthenticated()){
                 User user = userRepository.findByEmail(request.getEmail());

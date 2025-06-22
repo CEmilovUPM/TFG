@@ -1,6 +1,10 @@
 import re
 from datetime import datetime
 
+from flask import json
+
+from app.backend_client import Token, get_client, RequestBuilder
+
 
 # pass request.args
 def filter_goals_list(request_args, goals):
@@ -30,3 +34,11 @@ def filter_single_goal(request_args, progress_list):
 
 def render_date(date: str):
     return datetime.strptime(date, "%Y-%m-%d").strftime("%d/%m/%Y")
+
+
+def trim_float(value):
+    try:
+        f = float(value)
+        return int(f) if f.is_integer() else round(f,2)
+    except (ValueError, TypeError):
+        return value

@@ -2,8 +2,7 @@ import os
 
 from flask import Flask
 
-from app.views.protected_view import trim_float
-from app.views.utils import render_date
+from app.views.utils import render_date, trim_float
 
 
 def create_app():
