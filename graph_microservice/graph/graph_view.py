@@ -4,7 +4,7 @@ import json
 from copy import deepcopy
 import calendar
 
-from flask import Blueprint, request, redirect, render_template, jsonify
+from flask import Blueprint, request, redirect, render_template, jsonify, send_from_directory
 import plotly.graph_objs as go
 
 from graph.backend_client import get_client, RequestBuilder, Token
@@ -136,3 +136,7 @@ def profile(token: Token, refresh: Token):
 
     body = json.loads(response.data)
     return body, 200
+
+@protected.route('/graph-static/<path:filename>')
+def graph_static(filename):
+    return send_from_directory('static', filename)
