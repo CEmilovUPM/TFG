@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const applyBtn = document.getElementById('applyMonthBtn');
   const graphContainer = document.getElementById('graph-container');
 
-  // Initialize year select (same as before)
   const currentYear = new Date().getFullYear();
   for (let y = currentYear - 5; y <= currentYear + 5; y++) {
     const option = document.createElement('option');
@@ -17,7 +16,6 @@ document.addEventListener('DOMContentLoaded', function () {
   monthSelect.value = currentMonth;
 
   function fetchAndRenderGraph(yearMonth) {
-    // Notice we call the same endpoint, but add partial=true
     const url = `/user/${window.userId}/goals/${window.goalId}/graph?month=${yearMonth}&partial=true`;
 
     fetch(url)

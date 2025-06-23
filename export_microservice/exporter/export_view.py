@@ -83,8 +83,6 @@ def export_csv(user_id):
                 'progress_date': progress['date'],
             })
 
-
-    # Build response with correct headers
     response = Response(output.getvalue(), mimetype='text/csv')
     response.headers["Content-Disposition"] = "attachment; filename=data-report.csv"
     response.headers["JWT"] = token.value
@@ -98,82 +96,34 @@ def export_pdf(user_id):
         return redirect('/')
 
     client = get_client()
-    backend_request = (
+
+    goals_request = (
         RequestBuilder()
         .auth(token)
         .refresh(refresh)
         .set_method("get")
         .set_endpoint(f"/user/{user_id}/goals")
     )
-    response = client.request_reauth(backend_request)
-
-    if response.status in [401, 403]:
+    goals_response = client.request_reauth(goals_request)
+    if goals_response.status in [401, 403]:
         return redirect('/')
+    goals = json.loads(goals_response.data)["data"]
 
-    goals = json.loads(response.data)["data"]
-
-    user_data, status = profile(token,refresh)
+    user_data, status = profile(token, refresh)
     if status in [401, 403]:
         return redirect('/')
-    user_data = user_data["data"][0]
+    user = user_data["data"][0]
 
     buffer = io.BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
 
-
-
-    pdf.setTitle("Goal Progress Report")
-    pdf.setFont("Helvetica-Bold", 16)
-    pdf.drawString(30, height - 40, f"Goal Progress Report for User {user_data["name"]}, {user_data["email"]} (ID={user_data["id"]})")
-
+    draw_pdf_header(pdf, user, width, height)
     y = height - 70
-    pdf.setFont("Helvetica", 11)
     line_height = 16
 
     for goal in goals:
-        if y < 70:
-            pdf.showPage()
-            y = height - 50
-            pdf.setFont("Helvetica", 11)
-
-        # Goal header
-        goal_header = f"Goal: {goal['title']} (ID: {goal['id']})"
-        pdf.setFont("Helvetica-Bold", 12)
-        pdf.drawString(30, y, goal_header)
-        y -= line_height
-
-        # Optional extra goal info, smaller font
-        pdf.setFont("Helvetica-Oblique", 9)
-        desc = goal.get('description', '')
-        metric = goal.get('metric', '')
-        total = goal.get('totalDesiredAmount', '')
-        created = goal.get('creationDate', '')
-        completed = goal.get('completed', False)
-
-        pdf.drawString(40, y, f"Description: {desc}")
-        y -= line_height
-        pdf.drawString(40, y, f"Metric: {metric} | Total Desired: {total} | Created: {created} | Completed: {completed}")
-        y -= line_height
-
-        # Progress entries
-        pdf.setFont("Helvetica", 10)
-        progress_list = get_progress_by_goal_id(user_id, goal["id"],token, refresh)
-        if not progress_list:
-            pdf.drawString(50, y, "No progress recorded.")
-            y -= line_height
-        else:
-            for progress in progress_list:
-                if y < 50:
-                    pdf.showPage()
-                    y = height - 50
-                    pdf.setFont("Helvetica", 10)
-
-                progress_line = f"- [{progress['date']}] {progress['updateNote']} (Amount: {progress['amount']})"
-                pdf.drawString(50, y, progress_line)
-                y -= line_height
-
-        y -= line_height  # extra space between goals
+        y = draw_goal_section(pdf, user_id, goal, token, refresh, y, line_height, width, height)
 
     pdf.save()
     buffer.seek(0)
@@ -184,3 +134,55 @@ def export_pdf(user_id):
         download_name="goal-progress-report.pdf",
         mimetype='application/pdf'
     )
+
+
+def draw_pdf_header(pdf, user, width, height):
+    pdf.setTitle("Goal Progress Report")
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(
+        30, height - 40,
+        f"Goal Progress Report for User {user['name']}, {user['email']} (ID={user['id']})"
+    )
+
+
+def draw_goal_section(pdf, user_id, goal, token, refresh, y, line_height, width, height):
+    if y < 70:
+        pdf.showPage()
+        y = height - 50
+
+    # Goal header
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawString(30, y, f"Goal: {goal['title']} (ID: {goal['id']})")
+    y -= line_height
+
+    # Goal metadata
+    pdf.setFont("Helvetica-Oblique", 9)
+    pdf.drawString(40, y, f"Description: {goal.get('description', '')}")
+    y -= line_height
+    pdf.drawString(
+        40, y,
+        f"Metric: {goal.get('metric', '')} | Total Desired: {goal.get('totalDesiredAmount', '')} | "
+        f"Created: {goal.get('creationDate', '')} | Completed: {goal.get('completed', False)}"
+    )
+    y -= line_height
+
+    # Progress entries
+    pdf.setFont("Helvetica", 10)
+    progress_list = get_progress_by_goal_id(user_id, goal["id"], token, refresh)
+    if not progress_list:
+        pdf.drawString(50, y, "No progress recorded.")
+        y -= line_height
+    else:
+        for progress in progress_list:
+            if y < 50:
+                pdf.showPage()
+                y = height - 50
+                pdf.setFont("Helvetica", 10)
+
+            pdf.drawString(
+                50, y,
+                f"- [{progress['date']}] {progress['updateNote']} (Amount: {progress['amount']})"
+            )
+            y -= line_height
+
+    return y - line_height
