@@ -46,13 +46,6 @@ spec:
                 name: graph-service
                 port:
                   number: 80
-          - path: /graph-static(/|$)(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: graph-service
-                port:
-                  number: 80
           - path: /user/.*/goal/.*
             pathType: ImplementationSpecific
             backend:
@@ -79,5 +72,27 @@ spec:
             backend:
               service:
                 name: flask-frontend
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: graph-static-ingress
+  namespace: prod
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /static/$2
+spec:
+  rules:
+    - host: goal-tracker
+      http:
+        paths:
+          - path: /graph-static(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: graph-service
                 port:
                   number: 80

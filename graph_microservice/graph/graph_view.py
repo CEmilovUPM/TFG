@@ -136,7 +136,3 @@ def profile(token: Token, refresh: Token):
 
     body = json.loads(response.data)
     return body, 200
-
-@protected.route('/graph-static/<path:filename>')
-def graph_static(filename):
-    return send_from_directory('static', filename)
