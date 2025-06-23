@@ -1,11 +1,10 @@
 document.addEventListener('DOMContentLoaded', function () {
-
-  const monthSelect = document.getElementById('monthSelect');
-  const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
-  monthSelect.value = currentMonth;
-
-
   const yearSelect = document.getElementById('yearSelect');
+  const monthSelect = document.getElementById('monthSelect');
+  const applyBtn = document.getElementById('applyMonthBtn');
+  const graphContainer = document.getElementById('graph-container');
+
+  // Initialize year select (same as before)
   const currentYear = new Date().getFullYear();
   for (let y = currentYear - 5; y <= currentYear + 5; y++) {
     const option = document.createElement('option');
@@ -14,56 +13,58 @@ document.addEventListener('DOMContentLoaded', function () {
     if (y === currentYear) option.selected = true;
     yearSelect.appendChild(option);
   }
+  const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
+  monthSelect.value = currentMonth;
 
-  function attachClickHandler() {
-    const graphElement = document.querySelector('.plotly-graph-div');
-    if (!graphElement || typeof graphElement.on !== 'function') return;
-
-    graphElement.on('plotly_click', function(eventData) {
-      if (!eventData?.points?.length) return;
-
-      const point = eventData.points[0];
-      const clickedDate = point.x;
-
-      const redirectUrl = `/user/${window.userId}/goals/${window.goalId}?date=${clickedDate}`;
-      window.location.href = redirectUrl;
-    });
-  }
-
-  function updateGraph() {
-    const year = document.getElementById('yearSelect').value;
-    const month = document.getElementById('monthSelect').value;
-    const selectedMonth = `${year}-${month}`;
-
-    const url = new URL(window.location.href);
-    url.searchParams.set('month', selectedMonth);
-    url.searchParams.set('partial', 'true');
+  function fetchAndRenderGraph(yearMonth) {
+    // Notice we call the same endpoint, but add partial=true
+    const url = `/user/${window.userId}/goals/${window.goalId}/graph?month=${yearMonth}&partial=true`;
 
     fetch(url)
-      .then(response => response.json())
-      .then(data => {
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch graph JSON');
+        return res.json();
+      })
+      .then(graphJson => {
         const config = {
           staticPlot: false,
-          modeBarButtonsToRemove: ['lasso2d', 'select2d', 'zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'pan2d'],
+          modeBarButtonsToRemove: [
+            'lasso2d', 'select2d', 'zoom2d',
+            'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'pan2d'
+          ],
           displayModeBar: false
         };
 
-        data.layout = data.layout || {};
-        data.layout.dragmode = false;
-        data.layout.xaxis = data.layout.xaxis || {};
-        data.layout.yaxis = data.layout.yaxis || {};
-        data.layout.xaxis.fixedrange = true;
-        data.layout.yaxis.fixedrange = true;
+        Plotly.react(graphContainer, graphJson.data, {
+          ...graphJson.layout,
+          yaxis: {
+            ...graphJson.layout.yaxis,
+            fixedrange: true,
+            range: graphJson.layout.yaxis?.range || [0, 1]
+          },
+          xaxis: {
+            ...graphJson.layout.xaxis,
+            fixedrange: true,
+          },
+          dragmode: false,
+        }, config);
 
-        const graphDiv = document.getElementById('graph-container');
-        Plotly.react(graphDiv, data.data, data.layout, config);
-        attachClickHandler();
+        graphContainer.on('plotly_click', (eventData) => {
+          if (!eventData.points || eventData.points.length === 0) return;
+          const clickedDate = eventData.points[0].x;
+          window.location.href = `/user/${window.userId}/goals/${window.goalId}?date=${clickedDate}`;
+        });
       })
-      .catch(error => {
-        console.error('Error fetching updated graph:', error);
+      .catch(err => {
+        console.error(err);
+        graphContainer.innerHTML = `<p class="text-danger">Failed to load graph data.</p>`;
       });
   }
 
-  document.getElementById('applyMonthBtn').addEventListener('click', updateGraph);
-  attachClickHandler();
+  // Initial load
+  fetchAndRenderGraph(`${yearSelect.value}-${monthSelect.value}`);
+
+  applyBtn.addEventListener('click', () => {
+    fetchAndRenderGraph(`${yearSelect.value}-${monthSelect.value}`);
+  });
 });

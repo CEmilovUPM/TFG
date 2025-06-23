@@ -4,7 +4,7 @@ import json
 from copy import deepcopy
 import calendar
 
-from flask import Blueprint, request, redirect, render_template, jsonify, send_from_directory
+from flask import Blueprint, request, redirect, render_template, jsonify, send_from_directory, make_response
 import plotly.graph_objs as go
 
 from graph.backend_client import get_client, RequestBuilder, Token
@@ -41,12 +41,12 @@ def render_graph(user_id, goal_id):
 
     selected_month = request.args.get("month")
     if selected_month is None:
-        selected_month = str(datetime.now())[0:7]  # e.g. "2025-06"
+        selected_month = datetime.now().strftime("%Y-%m")
 
     filtered_progress = [p for p in progress_list if p['date'].startswith(selected_month)]
 
     year, month = map(int, selected_month.split("-"))
-    num_days = calendar.monthrange(year, month)[1]  # e.g., 30 for June
+    num_days = calendar.monthrange(year, month)[1]
     all_dates = [date(year, month, day) for day in range(1, num_days + 1)]
 
     if not filtered_progress:
@@ -67,7 +67,7 @@ def render_graph(user_id, goal_id):
         else:
             return render_template(
                 "graph_template.html",
-                graph_html="No data for the month picked",
+                graph_html="",
                 **user_data,
                 user_id=user_id,
                 goal_id=goal_id
@@ -102,27 +102,18 @@ def render_graph(user_id, goal_id):
         graph_json = json.loads(fig.to_json())
         return jsonify(graph_json)
 
-    fig.update_layout(
-        dragmode=False,
-        xaxis=dict(fixedrange=True),
-        yaxis=dict(fixedrange=True)
-    )
+    graph_html = ""
 
-    config = {
-        'staticPlot': False,
-        'modeBarButtonsToRemove': ['lasso2d', 'select2d', 'zoom2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'pan2d'],
-        'displayModeBar': False
-    }
-
-    graph_html = fig.to_html(full_html=False, config=config)
-    return render_template(
+    resp = make_response(render_template(
         "graph_template.html",
         graph_html=graph_html,
         **user_data,
         user_id=user_id,
         goal_id=goal_id,
         STATIC_URL=STATIC_URL
-    )
+    ))
+    resp.set_cookie("JWT", token.value)
+    return resp
 
 
 def profile(token: Token, refresh: Token):
