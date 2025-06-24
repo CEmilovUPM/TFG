@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 
-from flask import json
+from flask import json, make_response
 
 from app.backend_client import Token, get_client, RequestBuilder
 
@@ -42,3 +42,9 @@ def trim_float(value):
         return int(f) if f.is_integer() else round(f,2)
     except (ValueError, TypeError):
         return value
+
+
+def create_response(content, access_token: Token):
+    out = make_response(content)
+    out.set_cookie("JWT",access_token.value)
+    return out
