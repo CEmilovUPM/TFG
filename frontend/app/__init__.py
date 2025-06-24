@@ -21,8 +21,5 @@ def create_app():
     app.jinja_env.filters["trim_float"] = trim_float
     app.jinja_env.filters["render_date"] = render_date
 
-    for rule in app.url_map.iter_rules():
-        methods = ','.join(sorted(rule.methods - {'HEAD', 'OPTIONS'}))  # Ignore HEAD/OPTIONS for clarity
-        print(f"{rule.rule} -> Methods: [{methods}] Endpoint: {rule.endpoint}")
 
     return app
