@@ -13,12 +13,16 @@ def create_app():
 
     from app.views.index_view import main as main_blueprint
     from app.views.auth_view import auth as auth_blueprint
-    from app.views.protected_view import protected as partial_blueprint
+    from app.views import protected as partial_blueprint
     app.register_blueprint(main_blueprint)
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(partial_blueprint)
 
     app.jinja_env.filters["trim_float"] = trim_float
     app.jinja_env.filters["render_date"] = render_date
+
+    for rule in app.url_map.iter_rules():
+        methods = ','.join(sorted(rule.methods - {'HEAD', 'OPTIONS'}))  # Ignore HEAD/OPTIONS for clarity
+        print(f"{rule.rule} -> Methods: [{methods}] Endpoint: {rule.endpoint}")
 
     return app

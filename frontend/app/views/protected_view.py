@@ -3,8 +3,7 @@ import re
 
 from app.backend_client import get_client, RequestBuilder, Token
 from app.views.utils import filter_goals_list, filter_single_goal
-
-protected = Blueprint("protected", __name__)
+from app.views import protected
 
 
 @protected.route("/profile", methods=["GET"])
