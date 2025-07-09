@@ -1,3 +1,4 @@
+import os
 import re
 from datetime import datetime, date, timedelta
 import json
@@ -71,7 +72,7 @@ def render_graph(user_id, goal_id):
                 **user_data,
                 user_id=user_id,
                 goal_id=goal_id,
-                STATIC_URL=STATIC_URL
+                STATIC_URL=os.getenv("STATIC_URL")
             )
 
     date_amount_map = {}
@@ -111,7 +112,7 @@ def render_graph(user_id, goal_id):
         **user_data,
         user_id=user_id,
         goal_id=goal_id,
-        STATIC_URL=STATIC_URL
+        STATIC_URL=os.getenv("STATIC_URL")
     ))
     resp.set_cookie("JWT", token.value)
     return resp
