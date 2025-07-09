@@ -70,7 +70,8 @@ def render_graph(user_id, goal_id):
                 graph_html="",
                 **user_data,
                 user_id=user_id,
-                goal_id=goal_id
+                goal_id=goal_id,
+                STATIC_URL=STATIC_URL
             )
 
     date_amount_map = {}
